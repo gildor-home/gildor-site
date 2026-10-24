@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gildor — Τα 4 σύμπαντα</title>
+<style id="pageStyle">
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Jost:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{ background:#0d1420; color:#f4efe1; font-family:'Jost',sans-serif; font-weight:300; }
+canvas#bg{ position:fixed; inset:0; z-index:0; display:block; }
+.gildor-no-webgl #bg{ display:none; }
+.gildor-no-webgl{
+  background:
+    radial-gradient(circle at 20% 25%, rgba(47,90,88,0.35), transparent 55%),
+    radial-gradient(circle at 80% 70%, rgba(122,68,54,0.28), transparent 55%),
+    radial-gradient(circle at 55% 90%, rgba(201,164,76,0.12), transparent 50%),
+    #0d1420;
+  background-size:180% 180%, 180% 180%, 180% 180%, auto;
+  animation: gildorFallbackDrift 40s ease-in-out infinite alternate;
+}
+@keyframes gildorFallbackDrift{
+  0%{ background-position: 0% 0%, 100% 100%, 50% 100%; }
+  100%{ background-position: 30% 20%, 70% 80%, 60% 70%; }
+}
+
+.page{ position:relative; z-index:2; min-height:100vh; display:flex; flex-direction:column; padding: 26px 4vw 60px; }
+.txt-shadow{ filter: drop-shadow(0 2px 18px rgba(0,0,0,0.55)); }
+
+header{ display:flex; justify-content:space-between; align-items:flex-start; flex-shrink:0; position:relative; z-index:10; }
+.logo{ font-family:'Fraunces',serif; font-weight:500; font-size:clamp(11px,1.35vw,15px); letter-spacing:0.1em; white-space:nowrap; color:inherit; text-decoration:none; cursor:pointer; transition: color .3s ease; }
+.logo:hover{ color:#c9a44c; }
+.nav-tabs{ display:flex; align-items:center; gap:24px; }
+.nav-tabs a{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:rgba(244,239,225,0.6); text-decoration:none; white-space:nowrap; transition:color .25s ease; }
+.nav-tabs a:hover, .nav-tabs a.current{ color:#c9a44c; }
+.nav-item{ position:relative; }
+.nav-item > a{ cursor:pointer; }
+.submenu{
+  position:absolute; top:100%; left:50%; transform:translateX(-50%);
+  padding-top:16px; opacity:0; pointer-events:none; transition:opacity .3s ease;
+}
+.nav-item.open .submenu{ opacity:1; pointer-events:auto; }
+.submenu-inner{
+  background: rgba(13,20,32,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-top:1px solid rgba(201,164,76,0.4); padding:14px 0; min-width:210px;
+}
+.submenu-inner a{
+  display:block; padding:7px 24px; font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:14.5px; color:#ece3cd; text-decoration:none; transition: color .25s ease, padding-left .25s ease;
+  white-space:nowrap; letter-spacing:normal; text-transform:none;
+}
+.submenu-inner a:hover{ color:#c9a44c; padding-left:30px; }
+
+.right-block{ display:flex; align-items:center; gap:16px; }
+.lang-switch{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.08em; color:rgba(244,239,225,0.5); display:flex; gap:6px; }
+.lang-switch button{ background:none; border:none; color:inherit; font:inherit; cursor:pointer; padding:0; }
+.lang-switch button.active{ color:#c9a44c; }
+.social-row{ display:flex; align-items:center; gap:13px; }
+.social-row a{ color:rgba(244,239,225,0.5); text-decoration:none; display:flex; transition:color .25s ease; }
+.social-row a:hover{ color:#c9a44c; }
+
+.page-title{ margin-top:44px; max-width:720px; }
+.eyebrow{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#c9a44c; letter-spacing:0.22em; text-transform:uppercase; margin-bottom:12px; }
+.page-title h1{ font-family:'Fraunces',serif; font-weight:300; font-style:italic; font-size:clamp(28px,3.8vw,46px); line-height:1.35; color:#ece3cd; }
+.page-title p{ margin-top:14px; font-size:13px; line-height:1.8; color:rgba(244,239,225,0.55); max-width:480px; }
+
+/* constellation area */
+.constellation{ position:relative; height:min(52vh, 460px); margin-top:20px; }
+.const-particles{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+
+.star{
+  position:absolute; cursor:pointer; text-align:center; transform:translate(-50%,-50%);
+  text-decoration:none; display:block;
+}
+.sparkle{
+  width:16px; height:16px; margin:0 auto 8px; display:block;
+  animation: starTwinkle 3s ease-in-out infinite;
+}
+.sparkle path{ fill:var(--sc); filter: drop-shadow(0 0 4px var(--sc)); }
+@keyframes starTwinkle{ 0%,100%{ opacity:0.6; transform:scale(0.85); } 50%{ opacity:1; transform:scale(1.05); } }
+.star:hover .sparkle{ transform:scale(1.5); }
+.star-name{
+  font-family:'Fraunces',serif; font-weight:300; font-style:italic; color:#ece3cd;
+  font-size:clamp(15px,1.9vw,22px); white-space:nowrap; transition:color .3s ease;
+}
+.star:hover .star-name{ color:var(--sc); }
+
+/* organic, slightly irregular scatter instead of a perfect diamond */
+.star.s1{ --sc:#e0a878; }
+.star.s2{ --sc:#c17a63; }
+.star.s3{ --sc:#86b0ec; }
+.star.s4{ --sc:#7ec2b9; }
+
+/* small anonymous filler stars — pure atmosphere, no links */
+.filler{
+  position:absolute; pointer-events:none; color:#c9a44c;
+  animation: starTwinkle 3s ease-in-out infinite;
+}
+.filler svg{ width:100%; height:100%; }
+.filler path{ fill:currentColor; filter: drop-shadow(0 0 3px currentColor); }
+.filler.f1{ top:4%; left:58%; width:8px; height:8px; animation-delay:.2s; }
+.filler.f2{ top:18%; left:14%; width:6px; height:6px; animation-delay:.8s; }
+.filler.f3{ top:40%; left:6%; width:7px; height:7px; animation-delay:1.4s; }
+.filler.f4{ top:46%; left:94%; width:9px; height:9px; animation-delay:.5s; }
+.filler.f5{ top:70%; left:88%; width:6px; height:6px; animation-delay:1.9s; }
+.filler.f6{ top:96%; left:34%; width:7px; height:7px; animation-delay:1.1s; }
+.filler.f7{ top:80%; left:36%; width:5px; height:5px; animation-delay:2.3s; }
+.filler.f8{ top:8%; left:80%; width:6px; height:6px; animation-delay:1.6s; }
+
+/* Gildor: elegant italic text, no badge/compass — sparkle above and below */
+.star.center{ top:48%; left:50%; cursor:pointer; width:min(320px, 46vw); transition:filter .3s ease; }
+.gildor-center-img{ width:100%; height:auto; display:block; }
+.star.center:hover{ filter:brightness(1.2); }
+
+/* explanation sections below */
+.universes{ margin-top:40px; max-width:680px; display:flex; flex-direction:column; gap:48px; }
+.universe{ scroll-margin-top:40px; border-top:1px solid rgba(244,239,225,0.12); padding-top:22px; }
+.universe-eyebrow{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.15em; text-transform:uppercase; margin-bottom:10px; }
+.universe h2{ font-family:'Fraunces',serif; font-weight:300; font-style:italic; font-size:clamp(22px,2.6vw,30px); color:#ece3cd; margin-bottom:12px; }
+.universe p{ font-size:14px; line-height:1.85; color:rgba(244,239,225,0.65); }
+.universe.u1 .universe-eyebrow{ color:#e0a878; }
+.universe.u2 .universe-eyebrow{ color:#c17a63; }
+.universe.u3 .universe-eyebrow{ color:#86b0ec; }
+.universe.u4 .universe-eyebrow{ color:#7ec2b9; }
+
+footer{ flex-shrink:0; margin-top:70px; display:flex; justify-content:space-between; align-items:center; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:rgba(244,239,225,0.4); }
+footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic; font-size:11px; color:rgba(244,239,225,0.5); }
+
+@media (max-width:700px){
+  header{ flex-wrap:wrap; gap:14px; }
+  .nav-tabs{ order:3; width:100%; flex-wrap:wrap; }
+  .constellation{ height:auto; min-height:340px; }
+  .star-name{ font-size:16px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<div class="page">
+  <header class="txt-shadow">
+    <a href="index.html" class="logo">GILDOR CARANTHIR NARMOLANYA</a>
+    <div class="nav-tabs">
+      <div class="nav-item">
+          <a href="#">Σχετικά</a>
+          <div class="submenu">
+            <div class="submenu-inner">
+              <a href="gildor-whoiswho.html">Who is who</a>
+              <a href="gildor-journey.html">Ιστορίες για Αγρίους</a>
+              <a href="gildor-universes.html">Τα 4 σύμπαντα</a>
+              <a href="gildor-faq.html">FAQ</a>
+            </div>
+          </div>
+        </div>
+      <a href="gildor-archive.html">Αρχείο</a>
+      <a href="gildor-newsletter.html">Newsletter</a>
+      <a href="gildor-contact.html">Επικοινωνία</a>
+    </div>
+    <div class="right-block">
+      <div class="lang-switch"><button class="active">ΕΛ</button><span style="opacity:.4">/</span><button>EN</button></div>
+      <div class="social-row">
+        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="0.6" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 4v9.6a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 4c0 2.6 2 4.6 4.6 4.6"/></svg></a>
+        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15"><circle cx="8" cy="12" r="4" fill="currentColor"/><circle cx="16" cy="12" r="4" fill="currentColor" opacity="0.5"/></svg></a>
+        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M13.6 8.2h-1.2c-.7 0-1.1.4-1.1 1.1v1.5H9.1v1.9h2.2V16h2v-3.3h1.5l.2-1.9h-1.7v-1.2c0-.35.15-.55.6-.55h1.1V8.2z" fill="currentColor" stroke="none"/></svg></a>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-title txt-shadow">
+    <div class="eyebrow">ένας χάρτης ουρανού</div>
+    <h1>Τα 4 σύμπαντα</h1>
+    <p>Τέσσερις κόσμοι, ένα σημείο αφετηρίας. Κάνε κλικ σε ένα όνομα για να διαβάσεις γιατί υπάρχει.</p>
+  </div>
+
+  <div class="constellation">
+    <canvas class="const-particles" id="constParticles"></canvas>
+
+    <div class="filler f1"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+    <div class="filler f2"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+    <div class="filler f3"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+    <div class="filler f4"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+    <div class="filler f5"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+    <div class="filler f6"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+    <div class="filler f7"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+    <div class="filler f8"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+
+    <a class="star center" href="index.html" data-color="0.788,0.643,0.302">
+      <img class="gildor-center-img" src="gildor-center.png" alt="Gildor">
+    </a>
+    <a class="star s1" data-target="u1" data-color="0.878,0.658,0.470" href="https://worldnomad.gildor.com">
+      <svg class="sparkle" viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg>
+      <div class="star-name">World Nomad</div>
+    </a>
+    <a class="star s2" data-target="u2" data-color="0.757,0.478,0.388" href="https://music.gildor.com">
+      <svg class="sparkle" viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg>
+      <div class="star-name">Music of our Memories</div>
+    </a>
+    <a class="star s3" data-target="u3" data-color="0.525,0.690,0.925" href="https://cosmos.gildor.com">
+      <svg class="sparkle" viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg>
+      <div class="star-name">Out of this World</div>
+    </a>
+    <a class="star s4" data-target="u4" data-color="0.494,0.760,0.725" href="https://reinvented.gildor.com">
+      <svg class="sparkle" viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg>
+      <div class="star-name">Επαναπροσδιορίζομαι</div>
+    </a>
+  </div>
+
+  <div class="universes txt-shadow">
+    <div class="universe u1" id="u1">
+      
+      <h2>World Nomad</h2>
+      <p>[Placeholder — γιατί υπάρχουν τα ταξίδια σε αυτό το σύμπαν, τι σε οδήγησε εκεί, πώς συνδέεται νοηματικά με τα άλλα 3.]</p>
+    </div>
+    <div class="universe u2" id="u2">
+      
+      <h2>Music of our Memories</h2>
+      <p>[Placeholder — γιατί η μουσική, τι ρόλο παίζει στο ταξίδι σου.]</p>
+    </div>
+    <div class="universe u3" id="u3">
+      
+      <h2>Out of this World</h2>
+      <p>[Placeholder — γιατί η αστρονομία, πώς δένει με το wanderer concept.]</p>
+    </div>
+    <div class="universe u4" id="u4">
+      
+      <h2>Επαναπροσδιορίζομαι</h2>
+      <p>[Placeholder — πώς το βιβλίο κλείνει τον κύκλο των άλλων τριών.]</p>
+    </div>
+  </div>
+
+  <footer class="txt-shadow">
+    <div class="footer-status">[εδώ γράφεις ό,τι θες — status, quote, ό,τι σου έρθει]</div>
+    <div>© <span id="footerYear">2026</span> — ένα κοσμικό ταξίδι σε εξέλιξη</div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="gildor-enhancements.js"></script>
+<script id="pageLogic">
+/* ---------- particle stream: Gildor radiates light toward each universe ---------- */
+(function(){
+  const canvas = document.getElementById('constParticles');
+  const ctx = canvas.getContext('2d');
+  const container = document.querySelector('.constellation');
+  const centerEl = document.querySelector('.star.center');
+  const targets = document.querySelectorAll('.star[data-color]:not(.center)');
+
+  function resize(){
+    const rect = container.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function relPos(el){
+    const r = el.getBoundingClientRect();
+    const c = container.getBoundingClientRect();
+    return { x: r.left + r.width/2 - c.left, y: r.top + r.height/2 - c.top };
+  }
+
+  let particles = [];
+  const streams = [];
+  targets.forEach(t=>{
+    const [r,g,b] = t.dataset.color.split(',').map(Number);
+    streams.push({ target:t, color:[r*255,g*255,b*255], lastSpawn:0 });
+  });
+
+  function spawn(stream){
+    const from = relPos(centerEl);
+    const to = relPos(stream.target);
+    const dx = to.x - from.x, dy = to.y - from.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const speed = 1.4 + Math.random()*0.4;
+    const duration = dist / (speed*60); // frames roughly
+    particles.push({
+      x: from.x, y: from.y,
+      vx: (dx/dist)*speed, vy: (dy/dist)*speed,
+      life: 1.0, decay: 1/(duration*1.05),
+      color: stream.color
+    });
+  }
+
+  let frame = 0;
+  function loop(){
+    frame++;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.globalCompositeOperation = 'lighter';
+
+    streams.forEach(s=>{
+      if(frame - s.lastSpawn > 22 + Math.random()*20){
+        spawn(s);
+        s.lastSpawn = frame;
+      }
+    });
+
+    particles.forEach(p=>{
+      p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+      const alpha = Math.max(p.life, 0);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 1.6 + alpha*1.2, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${alpha*0.85})`;
+      ctx.fill();
+    });
+    particles = particles.filter(p=> p.life > 0);
+
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+document.querySelectorAll('.nav-item').forEach(item=>{
+  const trigger = item.querySelector('a');
+  trigger.addEventListener('click', (e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    item.classList.toggle('open');
+  });
+  item.querySelector('.submenu').addEventListener('click', (e)=> e.stopPropagation());
+});
+document.addEventListener('click', ()=>{
+  document.querySelectorAll('.nav-item.open').forEach(i=> i.classList.remove('open'));
+});
+
+/* ---------- STATIC TEST VERSION: fixed cardinal positions, equal real-pixel distance ---------- */
+(function(){
+  const container = document.querySelector('.constellation');
+  const orbitCenter = { x:50, y:48 };
+  const fixed = [
+    { el: document.querySelector('.star.s1'), angle:-90 },
+    { el: document.querySelector('.star.s2'), angle:0 },
+    { el: document.querySelector('.star.s3'), angle:90 },
+    { el: document.querySelector('.star.s4'), angle:180 }
+  ];
+  function place(){
+    const rect = container.getBoundingClientRect();
+    const radiusX = Math.min(260, rect.width * 0.3); // left/right unchanged
+    const radiusY = radiusX * 0.6; // top/bottom brought closer
+    fixed.forEach(s=>{
+      if(!s.el) return;
+      const rad = s.angle * Math.PI/180;
+      const xPx = radiusX * Math.cos(rad);
+      const yPx = radiusY * Math.sin(rad);
+      s.el.style.left = (orbitCenter.x + (xPx/rect.width)*100) + '%';
+      s.el.style.top = (orbitCenter.y + (yPx/rect.height)*100) + '%';
+    });
+  }
+  place();
+  window.addEventListener('resize', place);
+})();
+
+document.querySelectorAll('.star[data-color]').forEach(star=>{
+  const [r,g,b] = star.dataset.color.split(',').map(Number);
+  star.addEventListener('mouseenter', ()=>{
+    const rect = star.getBoundingClientRect();
+    const cx = (rect.left + rect.width/2) / window.innerWidth;
+    const cy = 1.0 - (rect.top + rect.height/2) / window.innerHeight;
+    const u = window.gildorUniforms;
+    if(u){
+      u.uAccentColor.value.set(r,g,b);
+      u.uAccentPosTarget.value.set(cx, cy);
+      u.uAccentStrengthTarget.value = 1.0;
+    }
+  });
+  star.addEventListener('mouseleave', ()=>{
+    const u = window.gildorUniforms;
+    if(u) u.uAccentStrengthTarget.value = 0.0;
+  });
+});
+</script>
+
+<script id="shaderInit">
+if(!window.gildorSceneInitialized){
+window.gildorSceneInitialized = true;
+
+const canvas = document.getElementById('bg');
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, preserveDrawingBuffer:true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+
+const uniforms = {
+  uTime:{value:0}, uMouse:{value:new THREE.Vector2(0.5,0.5)}, uMouseTarget:{value:new THREE.Vector2(0.5,0.5)},
+  uRes:{value:new THREE.Vector2(window.innerWidth, window.innerHeight)},
+  cNight:{value:new THREE.Color('#0d1420')}, cTeal:{value:new THREE.Color('#2f5a58')},
+  cGold:{value:new THREE.Color('#c9a44c')}, cClay:{value:new THREE.Color('#7a4436')},
+  uSeed:{value: window.gildorSeed || 0}, uDayMix:{value: window.gildorDayMix || 0},
+  uAccentColor:{value:new THREE.Vector3(0.788,0.643,0.302)},
+  uAccentPos:{value:new THREE.Vector2(0.5,0.5)}, uAccentPosTarget:{value:new THREE.Vector2(0.5,0.5)},
+  uAccentStrength:{value:0.0}, uAccentStrengthTarget:{value:0.0}
+};
+window.gildorUniforms = uniforms;
+const vertexShader = `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position,1.0); }`;
+const noiseGLSL = `
+vec3 mod289(vec3 x){return x - floor(x * (1.0/289.0)) * 289.0;}
+vec2 mod289(vec2 x){return x - floor(x * (1.0/289.0)) * 289.0;}
+vec3 permute(vec3 x){return mod289(((x*34.0)+1.0)*x);}
+float snoise(vec2 v){
+  const vec4 C = vec4(0.211324865405187,0.366025403784439,-0.577350269189626,0.024390243902439);
+  vec2 i = floor(v + dot(v, C.yy));
+  vec2 x0 = v - i + dot(i, C.xx);
+  vec2 i1 = (x0.x > x0.y) ? vec2(1.0,0.0) : vec2(0.0,1.0);
+  vec4 x12 = x0.xyxy + C.xxzz;
+  x12.xy -= i1;
+  i = mod289(i);
+  vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+  vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+  m = m*m; m = m*m;
+  vec3 x = 2.0 * fract(p * C.www) - 1.0;
+  vec3 h = abs(x) - 0.5;
+  vec3 ox = floor(x + 0.5);
+  vec3 a0 = x - ox;
+  m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+  vec3 g;
+  g.x = a0.x * x0.x + h.x * x0.y;
+  g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+  return 130.0 * dot(m, g);
+}`;
+const fragmentShader = `
+precision highp float;
+varying vec2 vUv;
+uniform float uTime, uSeed, uDayMix, uAccentStrength;
+uniform vec2 uMouse, uRes, uAccentPos;
+uniform vec3 cNight, cTeal, cGold, cClay, uAccentColor;
+${noiseGLSL}
+vec2 curl(vec2 p, float t){
+  float eps=0.6;
+  float n1=snoise(vec2(p.x,p.y+eps)+t);
+  float n2=snoise(vec2(p.x,p.y-eps)+t);
+  float n3=snoise(vec2(p.x+eps,p.y)+t);
+  float n4=snoise(vec2(p.x-eps,p.y)+t);
+  return vec2((n1-n2)/(2.0*eps),(n4-n3)/(2.0*eps));
+}
+void main(){
+  vec2 uv = vUv;
+  float aspect = uRes.x/uRes.y;
+  vec2 p = (uv-0.5) * vec2(aspect,1.0) * 2.2;
+  p += vec2(uSeed*0.37, uSeed*0.61);
+  vec2 mouseInfluence = (uMouse-0.5) * vec2(aspect,1.0) * 2.2;
+  float t = uTime*0.045;
+  vec2 flow = curl(p*0.8 + mouseInfluence*0.2, t);
+  p += flow*0.4;
+  float n1 = snoise(p*1.3 + vec2(t*1.3,-t*0.7));
+  float n2 = snoise(p*2.6 - vec2(t*0.8,t*1.1) + 4.0);
+  float n3 = snoise(p*5.0 + vec2(t*2.0,t*0.4) + 9.0);
+  float blob = n1*0.55 + n2*0.30 + n3*0.15;
+  blob = smoothstep(-0.15,0.65,blob);
+  vec3 col = mix(cNight, cTeal, blob*0.55);
+  col = mix(col, cClay, smoothstep(0.6,0.95,n2)*0.22);
+  col = mix(col, cGold, smoothstep(0.75,1.0,n3)*0.22);
+  col += cGold * max(uDayMix,0.0) * 0.06;
+  col = mix(col, cNight*0.75, max(-uDayMix,0.0)*0.22);
+
+  vec2 accentP = (uAccentPos-0.5) * vec2(aspect,1.0) * 2.2;
+  float distA = length(p - accentP);
+  float accentGlow = smoothstep(1.3,0.0,distA) * uAccentStrength;
+  col = mix(col, uAccentColor, accentGlow*0.6);
+  col += uAccentColor * accentGlow*0.3;
+
+  float vig = smoothstep(1.3,0.2,length(p));
+  col *= mix(0.5,1.0,vig);
+  float grain = fract(sin(dot(uv*uRes.xy, vec2(12.9898,78.233))) * 43758.5453);
+  col += (grain-0.5)*0.015;
+  gl_FragColor = vec4(col,1.0);
+}`;
+const material = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader });
+scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2), material));
+window.addEventListener('resize', ()=>{
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  uniforms.uRes.value.set(window.innerWidth, window.innerHeight);
+});
+window.addEventListener('mousemove', (e)=>{
+  uniforms.uMouseTarget.value.set(e.clientX/window.innerWidth, 1.0 - e.clientY/window.innerHeight);
+});
+const clock = new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  uniforms.uTime.value = clock.getElapsedTime();
+  uniforms.uMouse.value.lerp(uniforms.uMouseTarget.value, 0.03);
+  uniforms.uAccentPos.value.lerp(uniforms.uAccentPosTarget.value, 0.08);
+  uniforms.uAccentStrength.value += (uniforms.uAccentStrengthTarget.value - uniforms.uAccentStrength.value) * 0.08;
+  renderer.render(scene, camera);
+}
+animate();
+
+} // end window.gildorSceneInitialized guard
+</script>
+
+</body>
+</html>

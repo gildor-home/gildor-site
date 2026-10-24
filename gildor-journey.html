@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gildor — Ιστορίες για Αγρίους</title>
+<style id="pageStyle">
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Jost:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{ background:#0d1420; color:#f4efe1; font-family:'Jost',sans-serif; font-weight:300; }
+canvas#bg{ position:fixed; inset:0; z-index:0; display:block; }
+.gildor-no-webgl #bg{ display:none; }
+.gildor-no-webgl{
+  background:
+    radial-gradient(circle at 20% 25%, rgba(47,90,88,0.35), transparent 55%),
+    radial-gradient(circle at 80% 70%, rgba(122,68,54,0.28), transparent 55%),
+    radial-gradient(circle at 55% 90%, rgba(201,164,76,0.12), transparent 50%),
+    #0d1420;
+  background-size:180% 180%, 180% 180%, 180% 180%, auto;
+  animation: gildorFallbackDrift 40s ease-in-out infinite alternate;
+}
+@keyframes gildorFallbackDrift{
+  0%{ background-position: 0% 0%, 100% 100%, 50% 100%; }
+  100%{ background-position: 30% 20%, 70% 80%, 60% 70%; }
+}
+
+.page{ position:relative; z-index:2; min-height:100vh; display:flex; flex-direction:column; padding: 26px 4vw 60px; }
+.txt-shadow{ filter: drop-shadow(0 2px 18px rgba(0,0,0,0.55)); }
+
+header{ display:flex; justify-content:space-between; align-items:flex-start; flex-shrink:0; position:relative; z-index:10; }
+.logo{ font-family:'Fraunces',serif; font-weight:500; font-size:clamp(11px,1.35vw,15px); letter-spacing:0.1em; white-space:nowrap; color:inherit; text-decoration:none; cursor:pointer; transition: color .3s ease; }
+.logo:hover{ color:#c9a44c; }
+.nav-tabs{ display:flex; align-items:center; gap:24px; }
+.nav-tabs a{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:rgba(244,239,225,0.6); text-decoration:none; white-space:nowrap; transition:color .25s ease; }
+.nav-tabs a:hover, .nav-tabs a.current{ color:#c9a44c; }
+.nav-item{ position:relative; }
+.nav-item > a{ cursor:pointer; }
+.submenu{
+  position:absolute; top:100%; left:50%; transform:translateX(-50%);
+  padding-top:16px; opacity:0; pointer-events:none; transition:opacity .3s ease;
+}
+.nav-item.open .submenu{ opacity:1; pointer-events:auto; }
+.submenu-inner{
+  background: rgba(13,20,32,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-top:1px solid rgba(201,164,76,0.4); padding:14px 0; min-width:210px;
+}
+.submenu-inner a{
+  display:block; padding:7px 24px; font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:14.5px; color:#ece3cd; text-decoration:none; transition: color .25s ease, padding-left .25s ease;
+  white-space:nowrap; letter-spacing:normal; text-transform:none;
+}
+.submenu-inner a:hover{ color:#c9a44c; padding-left:30px; }
+
+.right-block{ display:flex; align-items:center; gap:16px; }
+.lang-switch{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.08em; color:rgba(244,239,225,0.5); display:flex; gap:6px; }
+.lang-switch button{ background:none; border:none; color:inherit; font:inherit; cursor:pointer; padding:0; }
+.lang-switch button.active{ color:#c9a44c; }
+.social-row{ display:flex; align-items:center; gap:13px; }
+.social-row a{ color:rgba(244,239,225,0.5); text-decoration:none; display:flex; transition:color .25s ease; }
+.social-row a:hover{ color:#c9a44c; }
+
+/* page intro */
+.eyebrow{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#c9a44c; letter-spacing:0.22em; text-transform:uppercase; margin-bottom:12px; }
+
+/* Ιστορίες για Αγρίους — two-column hero: text left, tree right */
+.hero-row{ position:relative; display:flex; align-items:center; justify-content:space-between; gap:3vw; margin-top:36px; flex-wrap:wrap; }
+.bridge-filler{ position:absolute; pointer-events:none; color:#c9a44c; animation: fillerTwinkle 3s ease-in-out infinite; z-index:1; }
+.bridge-filler svg{ width:100%; height:100%; }
+.bridge-filler path{ fill:currentColor; filter: drop-shadow(0 0 3px currentColor); }
+.bridge-filler.b1{ top:22%; right:24%; width:5px; height:5px; animation-delay:.4s; }
+.bridge-filler.b2{ top:48%; right:20%; width:6px; height:6px; animation-delay:1.3s; }
+.bridge-filler.b3{ top:68%; right:26%; width:4px; height:4px; animation-delay:2.1s; }
+.bridge-filler.b4{ top:35%; right:16%; width:4px; height:4px; animation-delay:.8s; }
+.hero-text{ flex:0 1 320px; max-width:380px; }
+.hero-text h1{ font-family:'Fraunces',serif; font-weight:300; font-style:italic; font-size:clamp(26px,3.4vw,40px); line-height:1.3; color:#ece3cd; margin-bottom:18px; }
+.hero-text p{ font-size:13.5px; line-height:1.85; color:rgba(244,239,225,0.65); margin-bottom:14px; }
+.hero-text p:last-child{ margin-bottom:0; }
+.hero-text .accent{ color:#e0c37a; }
+
+.tree-stage{ position:relative; flex:0 0 auto; display:flex; justify-content:center; }
+
+.story-list{ flex:0 1 280px; max-width:300px; align-self:stretch; display:flex; flex-direction:column; justify-content:center; }
+.story-frame{
+  position:relative; padding:34px 26px;
+  border-left:1px solid rgba(201,164,76,0.22); border-right:1px solid rgba(201,164,76,0.22);
+}
+.story-frame::before{
+  content:''; position:absolute; inset:-16%;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(240,211,138,0.08), transparent 68%);
+  filter: blur(30px);
+  z-index:-1;
+}
+.frame-wave{ position:absolute; left:0; width:100%; height:12px; overflow:visible; }
+.frame-wave.top{ top:-1px; }
+.frame-wave.bottom{ bottom:-1px; transform:scaleY(-1); }
+.frame-wave path{ stroke:#c9a44c; stroke-width:1; fill:none; opacity:0.6; }
+.frame-corner{ position:absolute; width:34px; height:34px; }
+.frame-corner path{ stroke:#c9a44c; stroke-width:1; fill:none; }
+.frame-corner .leaf{ fill:#c9a44c; opacity:0.7; stroke:none; }
+.frame-corner .dot{ fill:#c9a44c; stroke:none; }
+.frame-corner.tl{ top:-2px; left:-2px; }
+.frame-corner.tr{ top:-2px; right:-2px; transform:scaleX(-1); }
+.frame-corner.bl{ bottom:-2px; left:-2px; transform:scaleY(-1); }
+.frame-corner.br{ bottom:-2px; right:-2px; transform:scale(-1,-1); }
+.list-title-row{ display:flex; align-items:center; gap:10px; margin-bottom:20px; }
+.list-title-row::before, .list-title-row::after{ content:''; flex:1; height:1px; background:rgba(201,164,76,0.3); }
+.story-scroll{
+  max-height:min(38vh, 320px); overflow-y:auto; padding-right:4px;
+  scrollbar-width:thin; scrollbar-color:rgba(201,164,76,0.4) transparent;
+}
+.story-scroll::-webkit-scrollbar{ width:4px; }
+.story-scroll::-webkit-scrollbar-thumb{ background:rgba(201,164,76,0.4); border-radius:2px; }
+.story-list .list-title{
+  font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; text-transform:uppercase;
+  color:rgba(201,164,76,0.75); white-space:nowrap;
+}
+.story-item{
+  display:flex; align-items:baseline; gap:10px; padding:14px 0;
+  border-top:1px solid rgba(201,164,76,0.18);
+  cursor:pointer;
+}
+.story-list .story-item:last-child{ border-bottom:1px solid rgba(201,164,76,0.18); }
+.story-item .glyph{ color:#c9a44c; font-size:11px; flex-shrink:0; transition:transform .3s ease; }
+.story-item:hover .glyph{ transform:scale(1.4) rotate(15deg); }
+.story-item .story-title{
+  font-family:'Fraunces',serif; font-style:italic; font-weight:300; font-size:15px;
+  color:#ece3cd; letter-spacing:0.01em; transition:color .3s ease;
+}
+.story-item:hover .story-title{ color:#e0c37a; }
+.tree-wrap{ position:relative; height:min(86vh, 780px); }
+.tree-wrap::before{
+  content:''; position:absolute; inset:-14%;
+  background: radial-gradient(ellipse 55% 45% at 50% 35%, rgba(240,211,138,0.10), transparent 65%),
+              radial-gradient(ellipse 50% 30% at 50% 92%, rgba(219,230,245,0.10), transparent 65%);
+  filter: blur(40px);
+  z-index:-1;
+}
+.tree-img{ height:100%; width:auto; display:block; mix-blend-mode: screen; }
+.tree-star{
+  position:absolute; width:22px; height:22px; transform:translate(-50%,-50%);
+  cursor:pointer; display:block;
+}
+.tree-star svg{ width:100%; height:100%; overflow:visible; }
+.tree-star path{
+  fill:#ffffff; opacity:0.9;
+  filter: drop-shadow(0 0 3px #8cc8eb) drop-shadow(0 0 8px #8cc8eb) drop-shadow(0 0 15px rgba(140,200,235,0.9));
+  transition: filter .35s ease, opacity .35s ease; transform-origin:center; transform-box: fill-box;
+  animation: treeStarPulse 2.2s ease-in-out infinite;
+}
+.tree-star:hover path{
+  animation-play-state:paused; opacity:1; transform:scale(1.4) !important;
+  filter: drop-shadow(0 0 4px #8cc8eb) drop-shadow(0 0 12px #8cc8eb) drop-shadow(0 0 22px rgba(140,200,235,1));
+}
+@keyframes treeStarPulse{
+  0%,100%{ transform:scale(0.85); opacity:0.75; }
+  50%{ transform:scale(1.15); opacity:1; }
+}
+.tree-star.p1{ top:13%; left:56%; }
+.tree-star.p2{ top:30%; left:41%; }
+.tree-star.p3{ top:26%; left:58%; }
+.tree-star.p4{ top:44%; left:28%; }
+.tree-star.p5{ top:40%; left:64%; }
+.tree-star.p6{ top:58%; left:20%; }
+.tree-star.p7{ top:54%; left:79%; }
+.tree-star.p8{ top:52%; left:45%; }
+.tree-star.p2 path{ animation-delay:.3s; }
+.tree-star.p3 path{ animation-delay:.6s; }
+.tree-star.p4 path{ animation-delay:.9s; }
+.tree-star.p5 path{ animation-delay:1.2s; }
+.tree-star.p6 path{ animation-delay:1.5s; }
+.tree-star.p7 path{ animation-delay:1.8s; }
+.tree-star.p8 path{ animation-delay:2.1s; }
+
+/* scattered filler stars around the tree — gives it company instead of empty dark space */
+.tree-filler{ position:absolute; pointer-events:none; color:#c9a44c; animation: fillerTwinkle 3s ease-in-out infinite; }
+.edge-star{ position:absolute; pointer-events:none; color:#f0d38a; z-index:5; animation: fillerTwinkle 2.6s ease-in-out infinite; }
+.edge-star svg{ width:100%; height:100%; }
+.edge-star path{ fill:currentColor; filter: drop-shadow(0 0 5px currentColor); }
+.edge-star.e1{ top:2%; left:6%; width:9px; height:9px; animation-delay:.3s; }
+.edge-star.e2{ top:6%; right:4%; width:7px; height:7px; animation-delay:1.1s; }
+.edge-star.e3{ top:48%; left:1%; width:8px; height:8px; animation-delay:.7s; }
+.edge-star.e4{ top:52%; right:0%; width:6px; height:6px; animation-delay:1.6s; }
+.edge-star.e5{ bottom:3%; left:12%; width:7px; height:7px; animation-delay:2s; }
+.edge-star.e6{ bottom:5%; right:10%; width:9px; height:9px; animation-delay:.5s; }
+
+.story-preview{
+  position:absolute; z-index:20; width:190px;
+  background:rgba(13,20,32,0.88); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(201,164,76,0.4); padding:12px 14px;
+  opacity:0; pointer-events:none; transform:translateY(4px);
+  transition:opacity .25s ease, transform .25s ease;
+}
+.story-preview.visible{ opacity:1; transform:translateY(0); }
+.preview-title{
+  font-family:'Fraunces',serif; font-style:italic; font-weight:300; font-size:14px;
+  color:#e0c37a; margin-bottom:6px;
+}
+.preview-teaser{
+  font-family:'Jost',sans-serif; font-size:11px; line-height:1.6; color:rgba(244,239,225,0.65);
+}
+
+.story-overlay{
+  position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center;
+  background:rgba(8,13,22,0.88); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  opacity:0; pointer-events:none; transition:opacity .4s ease;
+}
+.story-overlay.open{ opacity:1; pointer-events:auto; }
+.story-overlay-card{
+  position:relative; max-width:560px; width:88%; max-height:78vh; overflow-y:auto;
+  background:rgba(13,20,32,0.95); border:1px solid rgba(201,164,76,0.4);
+  padding:44px 40px; transform:translateY(14px); transition:transform .4s ease;
+}
+.story-overlay.open .story-overlay-card{ transform:translateY(0); }
+.overlay-close{
+  position:absolute; top:16px; right:20px; background:none; border:none; cursor:pointer;
+  font-size:22px; line-height:1; color:rgba(244,239,225,0.5); transition:color .25s ease;
+}
+.overlay-close:hover{ color:#c9a44c; }
+.overlay-title{
+  font-family:'Fraunces',serif; font-style:italic; font-weight:300; font-size:clamp(22px,3vw,30px);
+  color:#e0c37a; margin-bottom:20px; padding-right:20px;
+}
+.overlay-body{ font-size:14px; line-height:1.9; color:rgba(244,239,225,0.75); }
+.tree-filler svg{ width:100%; height:100%; }
+.tree-filler path{ fill:currentColor; filter: drop-shadow(0 0 3px currentColor); }
+@keyframes fillerTwinkle{ 0%,100%{ opacity:0.5; transform:scale(0.85); } 50%{ opacity:1; transform:scale(1.05); } }
+.tree-filler.f1{ top:2%; left:2%; width:7px; height:7px; animation-delay:.2s; }
+.tree-filler.f2{ top:10%; left:96%; width:6px; height:6px; animation-delay:.9s; }
+.tree-filler.f3{ top:24%; left:-6%; width:5px; height:5px; animation-delay:1.5s; }
+.tree-filler.f4{ top:38%; left:102%; width:8px; height:8px; animation-delay:.5s; }
+.tree-filler.f5{ top:58%; left:-8%; width:6px; height:6px; animation-delay:2s; }
+.tree-filler.f6{ top:74%; left:100%; width:5px; height:5px; animation-delay:1.1s; }
+.tree-filler.f7{ top:90%; left:0%; width:7px; height:7px; animation-delay:1.8s; }
+.tree-filler.f8{ top:96%; left:88%; width:6px; height:6px; animation-delay:.7s; }
+.tree-note{
+  max-width:680px; margin:20px auto 0; font-family:'JetBrains Mono',monospace; font-size:10.5px;
+  color:rgba(244,239,225,0.4); text-align:center;
+}
+
+footer{ flex-shrink:0; margin-top:60px; display:flex; justify-content:space-between; align-items:center; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:rgba(244,239,225,0.4); }
+footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic; font-size:11px; color:rgba(244,239,225,0.5); }
+
+@media (max-width:700px){
+  header{ flex-wrap:wrap; gap:14px; }
+  .nav-tabs{ order:3; width:100%; flex-wrap:wrap; }
+  .hero-row{ flex-direction:column; gap:24px; }
+  .hero-text{ max-width:100%; text-align:center; }
+  .story-list{ max-width:100%; width:100%; }
+  .tree-wrap{ height:min(50vh, 420px); }
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<div class="page">
+  <header class="txt-shadow">
+    <a href="index.html" class="logo">GILDOR CARANTHIR NARMOLANYA</a>
+    <div class="nav-tabs">
+      <div class="nav-item">
+          <a href="#">Σχετικά</a>
+          <div class="submenu">
+            <div class="submenu-inner">
+              <a href="gildor-whoiswho.html">Who is who</a>
+              <a href="gildor-journey.html">Ιστορίες για Αγρίους</a>
+              <a href="gildor-universes.html">Τα 4 σύμπαντα</a>
+              <a href="gildor-faq.html">FAQ</a>
+            </div>
+          </div>
+        </div>
+      <a href="gildor-archive.html">Αρχείο</a>
+      <a href="gildor-newsletter.html">Newsletter</a>
+      <a href="gildor-contact.html">Επικοινωνία</a>
+    </div>
+    <div class="right-block">
+      <div class="lang-switch"><button class="active">ΕΛ</button><span style="opacity:.4">/</span><button>EN</button></div>
+      <div class="social-row">
+        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="0.6" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 4v9.6a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 4c0 2.6 2 4.6 4.6 4.6"/></svg></a>
+        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15"><circle cx="8" cy="12" r="4" fill="currentColor"/><circle cx="16" cy="12" r="4" fill="currentColor" opacity="0.5"/></svg></a>
+        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M13.6 8.2h-1.2c-.7 0-1.1.4-1.1 1.1v1.5H9.1v1.9h2.2V16h2v-3.3h1.5l.2-1.9h-1.7v-1.2c0-.35.15-.55.6-.55h1.1V8.2z" fill="currentColor" stroke="none"/></svg></a>
+      </div>
+    </div>
+  </header>
+
+  <div class="hero-row">
+    <div class="hero-text txt-shadow">
+      <div class="eyebrow">ζωντανό αρχείο ζωής</div>
+      <h1>Ιστορίες για Αγρίους</h1>
+      <p>Εδώ ζουν οι ιστορίες μου — στιγμές, μέρη, ανθρώπους που άφησαν κάτι πάνω μου. Κάθε <span class="accent">αστέρι</span> πάνω στο δέντρο είναι μία από αυτές.</p>
+      <p>Πλησίασε το ποντίκι σε ένα αστέρι για να δεις μια πρόγευση, και κάνε κλικ για να τη διαβάσεις ολόκληρη.</p>
+    </div>
+
+    <div class="tree-stage">
+      <div class="tree-filler f1"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+      <div class="tree-filler f2"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+      <div class="tree-filler f3"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+      <div class="tree-filler f4"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+      <div class="tree-filler f5"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+      <div class="tree-filler f6"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+      <div class="tree-filler f7"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+      <div class="tree-filler f8"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+
+      <div class="tree-wrap txt-shadow">
+        <picture>
+          <source srcset="gildor-tree.webp" type="image/webp">
+          <img class="tree-img" id="treeImg" src="gildor-tree.png" alt="Δέντρο ιστοριών">
+        </picture>
+        <a class="tree-star p1" data-target="s1" data-title="[Τίτλος ιστορίας 1]" data-teaser="[Μια πρόταση πρόγευσης για την ιστορία 1 — θα τη γράψεις μέσα από το CMS.]" data-full="[Placeholder πλήρες κείμενο για την ιστορία 1. Εδώ θα γράφεις ολόκληρη την ιστορία μέσα από το CMS — όσο μεγάλη θες, με πιθανές εικόνες.]"><svg viewBox="0 0 100 100"><path d="M50,4 L58,32 L86,24 L64,42 L92,50 L64,58 L86,76 L58,68 L50,96 L42,68 L14,76 L36,58 L8,50 L36,42 L14,24 L42,32 Z"/></svg></a>
+        <a class="tree-star p2" data-target="s2" data-title="[Τίτλος ιστορίας 2]" data-teaser="[Μια πρόταση πρόγευσης για την ιστορία 2 — θα τη γράψεις μέσα από το CMS.]" data-full="[Placeholder πλήρες κείμενο για την ιστορία 2. Εδώ θα γράφεις ολόκληρη την ιστορία μέσα από το CMS — όσο μεγάλη θες, με πιθανές εικόνες.]"><svg viewBox="0 0 100 100"><path d="M50,4 L58,32 L86,24 L64,42 L92,50 L64,58 L86,76 L58,68 L50,96 L42,68 L14,76 L36,58 L8,50 L36,42 L14,24 L42,32 Z"/></svg></a>
+        <a class="tree-star p3" data-target="s3" data-title="[Τίτλος ιστορίας 3]" data-teaser="[Μια πρόταση πρόγευσης για την ιστορία 3 — θα τη γράψεις μέσα από το CMS.]" data-full="[Placeholder πλήρες κείμενο για την ιστορία 3. Εδώ θα γράφεις ολόκληρη την ιστορία μέσα από το CMS — όσο μεγάλη θες, με πιθανές εικόνες.]"><svg viewBox="0 0 100 100"><path d="M50,4 L58,32 L86,24 L64,42 L92,50 L64,58 L86,76 L58,68 L50,96 L42,68 L14,76 L36,58 L8,50 L36,42 L14,24 L42,32 Z"/></svg></a>
+        <a class="tree-star p4" data-target="s4" data-title="[Τίτλος ιστορίας 4]" data-teaser="[Μια πρόταση πρόγευσης για την ιστορία 4 — θα τη γράψεις μέσα από το CMS.]" data-full="[Placeholder πλήρες κείμενο για την ιστορία 4. Εδώ θα γράφεις ολόκληρη την ιστορία μέσα από το CMS — όσο μεγάλη θες, με πιθανές εικόνες.]"><svg viewBox="0 0 100 100"><path d="M50,4 L58,32 L86,24 L64,42 L92,50 L64,58 L86,76 L58,68 L50,96 L42,68 L14,76 L36,58 L8,50 L36,42 L14,24 L42,32 Z"/></svg></a>
+        <a class="tree-star p5" data-target="s5" data-title="[Τίτλος ιστορίας 5]" data-teaser="[Μια πρόταση πρόγευσης για την ιστορία 5 — θα τη γράψεις μέσα από το CMS.]" data-full="[Placeholder πλήρες κείμενο για την ιστορία 5. Εδώ θα γράφεις ολόκληρη την ιστορία μέσα από το CMS — όσο μεγάλη θες, με πιθανές εικόνες.]"><svg viewBox="0 0 100 100"><path d="M50,4 L58,32 L86,24 L64,42 L92,50 L64,58 L86,76 L58,68 L50,96 L42,68 L14,76 L36,58 L8,50 L36,42 L14,24 L42,32 Z"/></svg></a>
+        <a class="tree-star p6" data-target="s6" data-title="[Τίτλος ιστορίας 6]" data-teaser="[Μια πρόταση πρόγευσης για την ιστορία 6 — θα τη γράψεις μέσα από το CMS.]" data-full="[Placeholder πλήρες κείμενο για την ιστορία 6. Εδώ θα γράφεις ολόκληρη την ιστορία μέσα από το CMS — όσο μεγάλη θες, με πιθανές εικόνες.]"><svg viewBox="0 0 100 100"><path d="M50,4 L58,32 L86,24 L64,42 L92,50 L64,58 L86,76 L58,68 L50,96 L42,68 L14,76 L36,58 L8,50 L36,42 L14,24 L42,32 Z"/></svg></a>
+        <a class="tree-star p7" data-target="s7" data-title="[Τίτλος ιστορίας 7]" data-teaser="[Μια πρόταση πρόγευσης για την ιστορία 7 — θα τη γράψεις μέσα από το CMS.]" data-full="[Placeholder πλήρες κείμενο για την ιστορία 7. Εδώ θα γράφεις ολόκληρη την ιστορία μέσα από το CMS — όσο μεγάλη θες, με πιθανές εικόνες.]"><svg viewBox="0 0 100 100"><path d="M50,4 L58,32 L86,24 L64,42 L92,50 L64,58 L86,76 L58,68 L50,96 L42,68 L14,76 L36,58 L8,50 L36,42 L14,24 L42,32 Z"/></svg></a>
+        <a class="tree-star p8" data-target="s8" data-title="[Τίτλος ιστορίας 8]" data-teaser="[Μια πρόταση πρόγευσης για την ιστορία 8 — θα τη γράψεις μέσα από το CMS.]" data-full="[Placeholder πλήρες κείμενο για την ιστορία 8. Εδώ θα γράφεις ολόκληρη την ιστορία μέσα από το CMS — όσο μεγάλη θες, με πιθανές εικόνες.]"><svg viewBox="0 0 100 100"><path d="M50,4 L58,32 L86,24 L64,42 L92,50 L64,58 L86,76 L58,68 L50,96 L42,68 L14,76 L36,58 L8,50 L36,42 L14,24 L42,32 Z"/></svg></a>
+
+        <div class="edge-star e1"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+        <div class="edge-star e2"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+        <div class="edge-star e3"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+        <div class="edge-star e4"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+        <div class="edge-star e5"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+        <div class="edge-star e6"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+
+        <div class="story-preview" id="storyPreview">
+          <div class="preview-title"></div>
+          <div class="preview-teaser"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bridge-filler b1"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+    <div class="bridge-filler b2"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+    <div class="bridge-filler b3"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+    <div class="bridge-filler b4"><svg viewBox="0 0 100 100"><path d="M50,0 C52,35 65,48 100,50 C65,52 52,65 50,100 C48,65 35,52 0,50 C35,48 48,35 50,0 Z"/></svg></div>
+
+    <div class="story-list txt-shadow">
+      <div class="story-frame">
+        <svg class="frame-wave top" viewBox="0 0 240 10" preserveAspectRatio="none"><path d="M0,5 Q20,0 40,5 T80,5 T120,5 T160,5 T200,5 T240,5"/></svg>
+        <svg class="frame-wave bottom" viewBox="0 0 240 10" preserveAspectRatio="none"><path d="M0,5 Q20,0 40,5 T80,5 T120,5 T160,5 T200,5 T240,5"/></svg>
+        <svg class="frame-corner tl" viewBox="0 0 40 40"><path d="M1,22 C1,9 9,1 22,1"/><path class="leaf" d="M6,6 C9,10 8,15 3,14 C6,12 7,9 6,6 Z"/><circle class="dot" cx="9" cy="3" r="1"/></svg>
+        <svg class="frame-corner tr" viewBox="0 0 40 40"><path d="M1,22 C1,9 9,1 22,1"/><path class="leaf" d="M6,6 C9,10 8,15 3,14 C6,12 7,9 6,6 Z"/><circle class="dot" cx="9" cy="3" r="1"/></svg>
+        <svg class="frame-corner bl" viewBox="0 0 40 40"><path d="M1,22 C1,9 9,1 22,1"/><path class="leaf" d="M6,6 C9,10 8,15 3,14 C6,12 7,9 6,6 Z"/><circle class="dot" cx="9" cy="3" r="1"/></svg>
+        <svg class="frame-corner br" viewBox="0 0 40 40"><path d="M1,22 C1,9 9,1 22,1"/><path class="leaf" d="M6,6 C9,10 8,15 3,14 C6,12 7,9 6,6 Z"/><circle class="dot" cx="9" cy="3" r="1"/></svg>
+        <div class="list-title-row"><span class="list-title">Ιστορίες</span></div>
+        <div class="story-scroll">
+          <div class="story-item" data-id="s1" data-title="[Τίτλος ιστορίας 1]" data-full="[Placeholder πλήρες κείμενο για την ιστορία 1. Εδώ θα γράφεις ολόκληρη την ιστορία μέσα από το CMS — όσο μεγάλη θες, με πιθανές εικόνες.]"><span class="glyph">✦</span><span class="story-title">[Τίτλος ιστορίας 1]</span></div>
+          <div class="story-item" data-id="s2" data-title="[Τίτλος ιστορίας 2]" data-full="[Placeholder πλήρες κείμενο για την ιστορία 2. Εδώ θα γράφεις ολόκληρη την ιστορία μέσα από το CMS — όσο μεγάλη θες, με πιθανές εικόνες.]"><span class="glyph">✦</span><span class="story-title">[Τίτλος ιστορίας 2]</span></div>
+          <div class="story-item" data-id="s3" data-title="[Τίτλος ιστορίας 3]" data-full="[Placeholder πλήρες κείμενο για την ιστορία 3. Εδώ θα γράφεις ολόκληρη την ιστορία μέσα από το CMS — όσο μεγάλη θες, με πιθανές εικόνες.]"><span class="glyph">✦</span><span class="story-title">[Τίτλος ιστορίας 3]</span></div>
+          <div class="story-item" data-id="s4" data-title="[Τίτλος ιστορίας 4]" data-full="[Placeholder πλήρες κείμενο για την ιστορία 4. Εδώ θα γράφεις ολόκληρη την ιστορία μέσα από το CMS — όσο μεγάλη θες, με πιθανές εικόνες.]"><span class="glyph">✦</span><span class="story-title">[Τίτλος ιστορίας 4]</span></div>
+          <div class="story-item" data-id="s5" data-title="[Τίτλος ιστορίας 5]" data-full="[Placeholder πλήρες κείμενο για την ιστορία 5. Εδώ θα γράφεις ολόκληρη την ιστορία μέσα από το CMS — όσο μεγάλη θες, με πιθανές εικόνες.]"><span class="glyph">✦</span><span class="story-title">[Τίτλος ιστορίας 5]</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="story-overlay" id="storyOverlay">
+    <div class="story-overlay-card">
+      <button class="overlay-close" id="overlayClose">×</button>
+      <div class="overlay-title"></div>
+      <div class="overlay-body"></div>
+    </div>
+  </div>
+
+  <footer class="txt-shadow">
+    <div class="footer-status">[εδώ γράφεις ό,τι θες — status, quote, ό,τι σου έρθει]</div>
+    <div>© <span id="footerYear">2026</span> — ένα κοσμικό ταξίδι σε εξέλιξη</div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="gildor-enhancements.js"></script>
+<script id="pageLogic">
+(function(){
+  const preview = document.getElementById('storyPreview');
+  const wrap = document.querySelector('.tree-wrap');
+  if(!preview || !wrap) return;
+
+  document.querySelectorAll('.tree-star').forEach(star=>{
+    star.addEventListener('mouseenter', ()=>{
+      const title = star.dataset.title || '';
+      const teaser = star.dataset.teaser || '';
+      preview.querySelector('.preview-title').textContent = title;
+      preview.querySelector('.preview-teaser').textContent = teaser;
+
+      const wrapRect = wrap.getBoundingClientRect();
+      const starRect = star.getBoundingClientRect();
+      let left = (starRect.left - wrapRect.left) + starRect.width/2 + 14;
+      let top = (starRect.top - wrapRect.top) - 10;
+
+      // keep the card inside the tree-wrap horizontally
+      const cardWidth = 190;
+      if(left + cardWidth > wrapRect.width) left = (starRect.left - wrapRect.left) - cardWidth - 14;
+      if(left < 0) left = 6;
+
+      preview.style.left = left + 'px';
+      preview.style.top = top + 'px';
+      preview.classList.add('visible');
+    });
+    star.addEventListener('mouseleave', ()=>{
+      preview.classList.remove('visible');
+    });
+  });
+})();
+
+(function(){
+  const overlay = document.getElementById('storyOverlay');
+  const closeBtn = document.getElementById('overlayClose');
+  if(!overlay) return;
+
+  function openStory(title, full){
+    overlay.querySelector('.overlay-title').textContent = title;
+    overlay.querySelector('.overlay-body').textContent = full;
+    overlay.classList.add('open');
+  }
+  function closeStory(){
+    overlay.classList.remove('open');
+  }
+
+  document.querySelectorAll('.tree-star').forEach(star=>{
+    star.addEventListener('click', (e)=>{
+      e.preventDefault();
+      openStory(star.dataset.title, star.dataset.full);
+    });
+  });
+  document.querySelectorAll('.story-item').forEach(item=>{
+    item.addEventListener('click', ()=>{
+      openStory(item.dataset.title, item.dataset.full);
+    });
+  });
+
+  closeBtn.addEventListener('click', closeStory);
+  overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeStory(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeStory(); });
+})();
+
+document.querySelectorAll('.nav-item').forEach(item=>{
+  const trigger = item.querySelector('a');
+  trigger.addEventListener('click', (e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    item.classList.toggle('open');
+  });
+  item.querySelector('.submenu').addEventListener('click', (e)=> e.stopPropagation());
+});
+document.addEventListener('click', ()=>{
+  document.querySelectorAll('.nav-item.open').forEach(i=> i.classList.remove('open'));
+});
+
+</script>
+
+<script id="shaderInit">
+if(!window.gildorSceneInitialized){
+window.gildorSceneInitialized = true;
+
+/* shader background, same system as rest of site */
+const canvas = document.getElementById('bg');
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, preserveDrawingBuffer:true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+
+const uniforms = {
+  uTime:{value:0}, uMouse:{value:new THREE.Vector2(0.5,0.5)}, uMouseTarget:{value:new THREE.Vector2(0.5,0.5)},
+  uRes:{value:new THREE.Vector2(window.innerWidth, window.innerHeight)},
+  cNight:{value:new THREE.Color('#0d1420')}, cTeal:{value:new THREE.Color('#2f5a58')},
+  cGold:{value:new THREE.Color('#c9a44c')}, cClay:{value:new THREE.Color('#7a4436')},
+  uSeed:{value: window.gildorSeed || 0}, uDayMix:{value: window.gildorDayMix || 0}
+};
+window.gildorUniforms = uniforms;
+const vertexShader = `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position,1.0); }`;
+const noiseGLSL = `
+vec3 mod289(vec3 x){return x - floor(x * (1.0/289.0)) * 289.0;}
+vec2 mod289(vec2 x){return x - floor(x * (1.0/289.0)) * 289.0;}
+vec3 permute(vec3 x){return mod289(((x*34.0)+1.0)*x);}
+float snoise(vec2 v){
+  const vec4 C = vec4(0.211324865405187,0.366025403784439,-0.577350269189626,0.024390243902439);
+  vec2 i = floor(v + dot(v, C.yy));
+  vec2 x0 = v - i + dot(i, C.xx);
+  vec2 i1 = (x0.x > x0.y) ? vec2(1.0,0.0) : vec2(0.0,1.0);
+  vec4 x12 = x0.xyxy + C.xxzz;
+  x12.xy -= i1;
+  i = mod289(i);
+  vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+  vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+  m = m*m; m = m*m;
+  vec3 x = 2.0 * fract(p * C.www) - 1.0;
+  vec3 h = abs(x) - 0.5;
+  vec3 ox = floor(x + 0.5);
+  vec3 a0 = x - ox;
+  m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+  vec3 g;
+  g.x = a0.x * x0.x + h.x * x0.y;
+  g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+  return 130.0 * dot(m, g);
+}`;
+const fragmentShader = `
+precision highp float;
+varying vec2 vUv;
+uniform float uTime, uSeed, uDayMix;
+uniform vec2 uMouse, uRes;
+uniform vec3 cNight, cTeal, cGold, cClay;
+${noiseGLSL}
+vec2 curl(vec2 p, float t){
+  float eps=0.6;
+  float n1=snoise(vec2(p.x,p.y+eps)+t);
+  float n2=snoise(vec2(p.x,p.y-eps)+t);
+  float n3=snoise(vec2(p.x+eps,p.y)+t);
+  float n4=snoise(vec2(p.x-eps,p.y)+t);
+  return vec2((n1-n2)/(2.0*eps),(n4-n3)/(2.0*eps));
+}
+void main(){
+  vec2 uv = vUv;
+  float aspect = uRes.x/uRes.y;
+  vec2 p = (uv-0.5) * vec2(aspect,1.0) * 2.2;
+  p += vec2(uSeed*0.37, uSeed*0.61);
+  vec2 mouseInfluence = (uMouse-0.5) * vec2(aspect,1.0) * 2.2;
+  float t = uTime*0.045;
+  vec2 flow = curl(p*0.8 + mouseInfluence*0.2, t);
+  p += flow*0.4;
+  float n1 = snoise(p*1.3 + vec2(t*1.3,-t*0.7));
+  float n2 = snoise(p*2.6 - vec2(t*0.8,t*1.1) + 4.0);
+  float n3 = snoise(p*5.0 + vec2(t*2.0,t*0.4) + 9.0);
+  float blob = n1*0.55 + n2*0.30 + n3*0.15;
+  blob = smoothstep(-0.15,0.65,blob);
+  vec3 col = mix(cNight, cTeal, blob*0.55);
+  col = mix(col, cClay, smoothstep(0.6,0.95,n2)*0.22);
+  col = mix(col, cGold, smoothstep(0.75,1.0,n3)*0.22);
+  col += cGold * max(uDayMix,0.0) * 0.06;
+  col = mix(col, cNight*0.75, max(-uDayMix,0.0)*0.22);
+  float vig = smoothstep(1.3,0.2,length(p));
+  col *= mix(0.5,1.0,vig);
+  float grain = fract(sin(dot(uv*uRes.xy, vec2(12.9898,78.233))) * 43758.5453);
+  col += (grain-0.5)*0.015;
+  gl_FragColor = vec4(col,1.0);
+}`;
+const material = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader });
+scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2), material));
+window.addEventListener('resize', ()=>{
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  uniforms.uRes.value.set(window.innerWidth, window.innerHeight);
+});
+window.addEventListener('mousemove', (e)=>{
+  uniforms.uMouseTarget.value.set(e.clientX/window.innerWidth, 1.0 - e.clientY/window.innerHeight);
+});
+const clock = new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  uniforms.uTime.value = clock.getElapsedTime();
+  uniforms.uMouse.value.lerp(uniforms.uMouseTarget.value, 0.03);
+  renderer.render(scene, camera);
+}
+animate();
+
+} // end window.gildorSceneInitialized guard
+</script>
+
+</body>
+</html>

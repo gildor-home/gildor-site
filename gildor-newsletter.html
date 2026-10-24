@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gildor — Newsletter</title>
+<style id="pageStyle">
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Jost:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{ background:#0d1420; color:#f4efe1; font-family:'Jost',sans-serif; font-weight:300; }
+canvas#bg{ position:fixed; inset:0; z-index:0; display:block; }
+.gildor-no-webgl #bg{ display:none; }
+.gildor-no-webgl{
+  background:
+    radial-gradient(circle at 20% 25%, rgba(47,90,88,0.35), transparent 55%),
+    radial-gradient(circle at 80% 70%, rgba(122,68,54,0.28), transparent 55%),
+    radial-gradient(circle at 55% 90%, rgba(201,164,76,0.12), transparent 50%),
+    #0d1420;
+  background-size:180% 180%, 180% 180%, 180% 180%, auto;
+  animation: gildorFallbackDrift 40s ease-in-out infinite alternate;
+}
+@keyframes gildorFallbackDrift{
+  0%{ background-position: 0% 0%, 100% 100%, 50% 100%; }
+  100%{ background-position: 30% 20%, 70% 80%, 60% 70%; }
+}
+
+
+.page{ position:relative; z-index:2; min-height:100vh; display:flex; flex-direction:column; padding: 26px 4vw 60px; }
+.txt-shadow{ filter: drop-shadow(0 2px 18px rgba(0,0,0,0.55)); }
+
+header{ display:flex; justify-content:space-between; align-items:flex-start; flex-shrink:0; position:relative; z-index:10; }
+.logo{ font-family:'Fraunces',serif; font-weight:500; font-size:clamp(11px,1.35vw,15px); letter-spacing:0.1em; white-space:nowrap; color:inherit; text-decoration:none; cursor:pointer; transition: color .3s ease; }
+.logo:hover{ color:#c9a44c; }
+.nav-tabs{ display:flex; align-items:center; gap:24px; }
+.nav-tabs a{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:rgba(244,239,225,0.6); text-decoration:none; white-space:nowrap; transition:color .25s ease; }
+.nav-tabs a:hover, .nav-tabs a.current{ color:#c9a44c; }
+.nav-item{ position:relative; }
+.nav-item > a{ cursor:pointer; }
+.submenu{
+  position:absolute; top:100%; left:50%; transform:translateX(-50%);
+  padding-top:16px; opacity:0; pointer-events:none; transition:opacity .3s ease;
+}
+.nav-item.open .submenu{ opacity:1; pointer-events:auto; }
+.submenu-inner{
+  background: rgba(13,20,32,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-top:1px solid rgba(201,164,76,0.4); padding:14px 0; min-width:210px;
+}
+.submenu-inner a{
+  display:block; padding:7px 24px; font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:14.5px; color:#ece3cd; text-decoration:none; transition: color .25s ease, padding-left .25s ease;
+  white-space:nowrap; letter-spacing:normal; text-transform:none;
+}
+.submenu-inner a:hover{ color:#c9a44c; padding-left:30px; }
+
+.right-block{ display:flex; align-items:center; gap:16px; }
+.lang-switch{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.08em; color:rgba(244,239,225,0.5); display:flex; gap:6px; }
+.lang-switch button{ background:none; border:none; color:inherit; font:inherit; cursor:pointer; padding:0; }
+.lang-switch button.active{ color:#c9a44c; }
+.social-row{ display:flex; align-items:center; gap:13px; }
+.social-row a{ color:rgba(244,239,225,0.5); text-decoration:none; display:flex; transition:color .25s ease; }
+.social-row a:hover{ color:#c9a44c; }
+
+/* hero signup section — the main event, centered */
+.signup-hero{
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding: 60px 0; min-height:70vh;
+}
+.eyebrow{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#c9a44c; letter-spacing:0.22em; text-transform:uppercase; margin-bottom:20px; }
+.signup-hero h1{
+  font-family:'Fraunces',serif; font-weight:300; font-style:italic; font-size:clamp(32px,5.2vw,64px);
+  line-height:1.3; color:#ece3cd; max-width:820px;
+}
+.signup-hero h1 em{ font-style:normal; font-weight:500; color:#fff; border-bottom:1px solid #c9a44c; }
+.signup-hero .sub{ margin-top:22px; font-size:14px; line-height:1.8; color:rgba(244,239,225,0.6); max-width:480px; }
+
+.email-form{ margin-top:44px; display:flex; align-items:flex-end; gap:16px; }
+.email-form input{
+  background:none; border:none; border-bottom:1px solid rgba(244,239,225,0.3);
+  padding:10px 4px; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:20px;
+  color:#f4efe1; outline:none; width:300px; text-align:center; transition:border-color .3s ease;
+}
+.email-form input::placeholder{ color:rgba(244,239,225,0.35); }
+.email-form input:focus{ border-color:#c9a44c; }
+.email-form button{
+  background:none; border:none; border-bottom:1px solid #c9a44c;
+  font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
+  color:#c9a44c; padding:10px 4px; cursor:pointer; transition: color .3s ease, border-color .3s ease;
+  display:flex; align-items:center; gap:8px;
+}
+.email-form button:hover{ color:#ece3cd; border-color:#ece3cd; }
+.email-form button .arrow{ transition: transform .3s ease; }
+.email-form button:hover .arrow{ transform: translateX(4px); }
+
+.form-note{ margin-top:18px; font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.06em; color:rgba(244,239,225,0.35); }
+
+.success-msg{
+  display:none; margin-top:44px; font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:20px; color:#7ec2b9;
+}
+.success-msg.show{ display:block; }
+
+/* frequency note as small floating detail */
+.freq-note{
+  margin-top:38px; display:flex; align-items:center; gap:10px;
+  font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.08em; color:rgba(244,239,225,0.4);
+}
+.freq-note .dot{ width:5px; height:5px; border-radius:50%; background:#c9a44c; }
+
+/* past issues archive */
+.past-issues{ padding: 40px 0 20px; }
+.section-label{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:rgba(244,239,225,0.4); letter-spacing:0.18em; text-transform:uppercase; margin-bottom:20px; }
+.issue{
+  display:flex; gap:26px; align-items:baseline; padding:18px 0; border-top:1px solid rgba(244,239,225,0.1);
+  cursor:pointer; transition: padding-left .3s ease;
+}
+.issue:last-child{ border-bottom:1px solid rgba(244,239,225,0.1); }
+.issue:hover{ padding-left:12px; }
+.issue-num{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:rgba(244,239,225,0.4); width:90px; flex-shrink:0; }
+.issue-body{ flex:1; }
+.issue-title{ font-family:'Fraunces',serif; font-style:italic; font-weight:300; font-size:18px; color:#ece3cd; }
+.issue:hover .issue-title{ color:#fdfaf1; }
+.issue-excerpt{ font-size:12px; color:rgba(244,239,225,0.5); margin-top:5px; max-width:520px; line-height:1.6; }
+.issue-arrow{ font-family:'JetBrains Mono',monospace; font-size:14px; color:rgba(244,239,225,0.3); transition: transform .3s ease, color .3s ease; }
+.issue:hover .issue-arrow{ transform:translateX(5px); color:#c9a44c; }
+
+footer{ flex-shrink:0; margin-top:50px; display:flex; justify-content:space-between; align-items:center; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:rgba(244,239,225,0.4); }
+footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic; font-size:11px; color:rgba(244,239,225,0.5); }
+
+@media (max-width:700px){
+  header{ flex-wrap:wrap; gap:14px; }
+  .nav-tabs{ order:3; width:100%; flex-wrap:wrap; }
+  .email-form{ flex-direction:column; align-items:center; width:100%; }
+  .email-form input{ width:100%; max-width:320px; text-align:left; }
+  .email-form button{ width:100%; max-width:320px; justify-content:center; }
+  .issue{ flex-wrap:wrap; }
+  .issue-num{ width:auto; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<div class="page">
+  <header class="txt-shadow">
+    <a href="index.html" class="logo">GILDOR CARANTHIR NARMOLANYA</a>
+    <div class="nav-tabs">
+      <div class="nav-item">
+          <a href="#">Σχετικά</a>
+          <div class="submenu">
+            <div class="submenu-inner">
+              <a href="gildor-whoiswho.html">Who is who</a>
+              <a href="gildor-journey.html">Ιστορίες για Αγρίους</a>
+              <a href="gildor-universes.html">Τα 4 σύμπαντα</a>
+              <a href="gildor-faq.html">FAQ</a>
+            </div>
+          </div>
+        </div>
+      <a href="gildor-archive.html">Αρχείο</a>
+      <a href="#" class="current">Newsletter</a>
+      <a href="gildor-contact.html">Επικοινωνία</a>
+    </div>
+    <div class="right-block">
+      <div class="lang-switch"><button class="active">ΕΛ</button><span style="opacity:.4">/</span><button>EN</button></div>
+      <div class="social-row">
+        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="0.6" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 4v9.6a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 4c0 2.6 2 4.6 4.6 4.6"/></svg></a>
+        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15"><circle cx="8" cy="12" r="4" fill="currentColor"/><circle cx="16" cy="12" r="4" fill="currentColor" opacity="0.5"/></svg></a>
+        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M13.6 8.2h-1.2c-.7 0-1.1.4-1.1 1.1v1.5H9.1v1.9h2.2V16h2v-3.3h1.5l.2-1.9h-1.7v-1.2c0-.35.15-.55.6-.55h1.1V8.2z" fill="currentColor" stroke="none"/></svg></a>
+      </div>
+    </div>
+  </header>
+
+  <div class="signup-hero txt-shadow">
+    <div class="eyebrow">ένα γράμμα, κάθε τόσο</div>
+    <h1>Ό,τι δεν χωράει <em>πουθενά αλλού</em>, καταλήγει εδώ.</h1>
+    <p class="sub">[Placeholder κείμενο — θα το γράψεις εσύ αργότερα: γιατί αξίζει η εγγραφή, τι θα λαμβάνει κανείς.]</p>
+
+    <form class="email-form" id="signupForm">
+      <input type="email" id="emailInput" placeholder="το email σου" required>
+      <button type="submit">Εγγραφή <span class="arrow">→</span></button>
+    </form>
+
+    <div class="success-msg" id="successMsg">Έγινε — καλώς ήρθες στη λίστα.</div>
+
+    <div class="freq-note"><span class="dot"></span> [συχνότητα αποστολής — θα οριστεί] · κανένα spam, ποτέ</div>
+  </div>
+
+  <div class="past-issues txt-shadow">
+    <div class="section-label">παλιότερα τεύχη</div>
+
+    <div class="issue">
+      <div class="issue-num">Τεύχος 03</div>
+      <div class="issue-body">
+        <div class="issue-title">[Placeholder τίτλος τεύχους]</div>
+        <div class="issue-excerpt">[Placeholder σύντομη περιγραφή του τεύχους — θα ενημερώνεται αυτόματα από το CMS.]</div>
+      </div>
+      <div class="issue-arrow">→</div>
+    </div>
+    <div class="issue">
+      <div class="issue-num">Τεύχος 02</div>
+      <div class="issue-body">
+        <div class="issue-title">[Placeholder τίτλος τεύχους]</div>
+        <div class="issue-excerpt">[Placeholder σύντομη περιγραφή του τεύχους.]</div>
+      </div>
+      <div class="issue-arrow">→</div>
+    </div>
+    <div class="issue">
+      <div class="issue-num">Τεύχος 01</div>
+      <div class="issue-body">
+        <div class="issue-title">[Placeholder τίτλος τεύχους]</div>
+        <div class="issue-excerpt">[Placeholder σύντομη περιγραφή του τεύχους.]</div>
+      </div>
+      <div class="issue-arrow">→</div>
+    </div>
+  </div>
+
+  <footer class="txt-shadow">
+    <div class="footer-status">[εδώ γράφεις ό,τι θες — status, quote, ό,τι σου έρθει]</div>
+    <div>© <span id="footerYear">2026</span> — ένα κοσμικό ταξίδι σε εξέλιξη</div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="gildor-enhancements.js"></script>
+<script id="pageLogic">
+document.querySelectorAll('.nav-item').forEach(item=>{
+  const trigger = item.querySelector('a');
+  trigger.addEventListener('click', (e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    item.classList.toggle('open');
+  });
+  item.querySelector('.submenu').addEventListener('click', (e)=> e.stopPropagation());
+});
+document.addEventListener('click', ()=>{
+  document.querySelectorAll('.nav-item.open').forEach(i=> i.classList.remove('open'));
+});
+
+/* demo form handling — real version will POST to email service (e.g. Buttondown) API */
+document.getElementById('signupForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  document.getElementById('signupForm').style.display = 'none';
+  document.querySelector('.freq-note').style.display = 'none';
+  document.getElementById('successMsg').classList.add('show');
+});
+
+</script>
+
+<script id="shaderInit">
+if(!window.gildorSceneInitialized){
+window.gildorSceneInitialized = true;
+
+/* shader background, same system as homepage/archive for continuity */
+let webglSupported = true;
+try{
+  const testCanvas = document.createElement('canvas');
+  webglSupported = !!(window.WebGLRenderingContext &&
+    (testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl')));
+}catch(e){ webglSupported = false; }
+
+if(!webglSupported){
+  // no WebGL available — fall back to a static CSS gradient instead of a
+  // blank/broken canvas, so the site still looks intentional
+  document.body.classList.add('gildor-no-webgl');
+} else {
+try{
+
+const canvas = document.getElementById('bg');
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, preserveDrawingBuffer:true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+
+const uniforms = {
+  uTime:{value:0}, uMouse:{value:new THREE.Vector2(0.5,0.5)}, uMouseTarget:{value:new THREE.Vector2(0.5,0.5)},
+  uRes:{value:new THREE.Vector2(window.innerWidth, window.innerHeight)},
+  cNight:{value:new THREE.Color('#0d1420')}, cTeal:{value:new THREE.Color('#2f5a58')},
+  cGold:{value:new THREE.Color('#c9a44c')}, cClay:{value:new THREE.Color('#7a4436')},
+  uSeed:{value: window.gildorSeed || 0}, uDayMix:{value: window.gildorDayMix || 0}
+};
+window.gildorUniforms = uniforms;
+const vertexShader = `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position,1.0); }`;
+const noiseGLSL = `
+vec3 mod289(vec3 x){return x - floor(x * (1.0/289.0)) * 289.0;}
+vec2 mod289(vec2 x){return x - floor(x * (1.0/289.0)) * 289.0;}
+vec3 permute(vec3 x){return mod289(((x*34.0)+1.0)*x);}
+float snoise(vec2 v){
+  const vec4 C = vec4(0.211324865405187,0.366025403784439,-0.577350269189626,0.024390243902439);
+  vec2 i = floor(v + dot(v, C.yy));
+  vec2 x0 = v - i + dot(i, C.xx);
+  vec2 i1 = (x0.x > x0.y) ? vec2(1.0,0.0) : vec2(0.0,1.0);
+  vec4 x12 = x0.xyxy + C.xxzz;
+  x12.xy -= i1;
+  i = mod289(i);
+  vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+  vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+  m = m*m; m = m*m;
+  vec3 x = 2.0 * fract(p * C.www) - 1.0;
+  vec3 h = abs(x) - 0.5;
+  vec3 ox = floor(x + 0.5);
+  vec3 a0 = x - ox;
+  m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+  vec3 g;
+  g.x = a0.x * x0.x + h.x * x0.y;
+  g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+  return 130.0 * dot(m, g);
+}`;
+const fragmentShader = `
+precision highp float;
+varying vec2 vUv;
+uniform float uTime, uSeed, uDayMix;
+uniform vec2 uMouse, uRes;
+uniform vec3 cNight, cTeal, cGold, cClay;
+${noiseGLSL}
+vec2 curl(vec2 p, float t){
+  float eps=0.6;
+  float n1=snoise(vec2(p.x,p.y+eps)+t);
+  float n2=snoise(vec2(p.x,p.y-eps)+t);
+  float n3=snoise(vec2(p.x+eps,p.y)+t);
+  float n4=snoise(vec2(p.x-eps,p.y)+t);
+  return vec2((n1-n2)/(2.0*eps),(n4-n3)/(2.0*eps));
+}
+void main(){
+  vec2 uv = vUv;
+  float aspect = uRes.x/uRes.y;
+  vec2 p = (uv-0.5) * vec2(aspect,1.0) * 2.2;
+  p += vec2(uSeed*0.37, uSeed*0.61); // generative: unique flow field per visit
+  vec2 mouseInfluence = (uMouse-0.5) * vec2(aspect,1.0) * 2.2;
+  float t = uTime*0.045;
+  vec2 flow = curl(p*0.8 + mouseInfluence*0.2, t);
+  p += flow*0.4;
+  float n1 = snoise(p*1.3 + vec2(t*1.3,-t*0.7));
+  float n2 = snoise(p*2.6 - vec2(t*0.8,t*1.1) + 4.0);
+  float n3 = snoise(p*5.0 + vec2(t*2.0,t*0.4) + 9.0);
+  float blob = n1*0.55 + n2*0.30 + n3*0.15;
+  blob = smoothstep(-0.15,0.65,blob);
+  vec3 col = mix(cNight, cTeal, blob*0.55);
+  col = mix(col, cClay, smoothstep(0.6,0.95,n2)*0.22);
+  col = mix(col, cGold, smoothstep(0.75,1.0,n3)*0.22);
+
+  // time-of-day tint
+  col += cGold * max(uDayMix,0.0) * 0.06;
+  col = mix(col, cNight*0.75, max(-uDayMix,0.0)*0.22);
+  float vig = smoothstep(1.3,0.2,length(p));
+  col *= mix(0.5,1.0,vig);
+  float grain = fract(sin(dot(uv*uRes.xy, vec2(12.9898,78.233))) * 43758.5453);
+  col += (grain-0.5)*0.015;
+  gl_FragColor = vec4(col,1.0);
+}`;
+const material = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader });
+scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2), material));
+window.addEventListener('resize', ()=>{
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  uniforms.uRes.value.set(window.innerWidth, window.innerHeight);
+});
+window.addEventListener('mousemove', (e)=>{
+  uniforms.uMouseTarget.value.set(e.clientX/window.innerWidth, 1.0 - e.clientY/window.innerHeight);
+});
+const clock = new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  uniforms.uTime.value = clock.getElapsedTime();
+  uniforms.uMouse.value.lerp(uniforms.uMouseTarget.value, 0.03);
+  renderer.render(scene, camera);
+}
+animate();
+
+
+}catch(err){
+  // WebGL context creation or shader compilation failed unexpectedly —
+  // fall back gracefully instead of leaving a broken/blank canvas
+  console.error('Gildor: WebGL init failed, using fallback background.', err);
+  document.body.classList.add('gildor-no-webgl');
+}
+} // end webglSupported check
+
+} // end window.gildorSceneInitialized guard
+</script>
+
+</body>
+</html>

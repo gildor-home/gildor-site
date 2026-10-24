@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gildor — Αρχείο</title>
+<style id="pageStyle">
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Jost:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  background:#0d1420; color:#f4efe1; font-family:'Jost',sans-serif; font-weight:300;
+}
+canvas#bg{ position:fixed; inset:0; z-index:0; display:block; }
+.gildor-no-webgl #bg{ display:none; }
+.gildor-no-webgl{
+  background:
+    radial-gradient(circle at 20% 25%, rgba(47,90,88,0.35), transparent 55%),
+    radial-gradient(circle at 80% 70%, rgba(122,68,54,0.28), transparent 55%),
+    radial-gradient(circle at 55% 90%, rgba(201,164,76,0.12), transparent 50%),
+    #0d1420;
+  background-size:180% 180%, 180% 180%, 180% 180%, auto;
+  animation: gildorFallbackDrift 40s ease-in-out infinite alternate;
+}
+@keyframes gildorFallbackDrift{
+  0%{ background-position: 0% 0%, 100% 100%, 50% 100%; }
+  100%{ background-position: 30% 20%, 70% 80%, 60% 70%; }
+}
+
+
+.page{ position:relative; z-index:2; min-height:100vh; display:flex; flex-direction:column; padding: 26px 4vw 60px; }
+.txt-shadow{ filter: drop-shadow(0 2px 18px rgba(0,0,0,0.55)); }
+
+header{ display:flex; justify-content:space-between; align-items:flex-start; flex-shrink:0; position:relative; z-index:10; }
+.logo{ font-family:'Fraunces',serif; font-weight:500; font-size:clamp(11px,1.35vw,15px); letter-spacing:0.1em; white-space:nowrap; color:inherit; text-decoration:none; cursor:pointer; transition: color .3s ease; }
+.logo:hover{ color:#c9a44c; }
+.nav-tabs{ display:flex; align-items:center; gap:24px; }
+.nav-tabs a{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:rgba(244,239,225,0.6); text-decoration:none; white-space:nowrap; transition:color .25s ease; }
+.nav-tabs a:hover, .nav-tabs a.current{ color:#c9a44c; }
+.nav-item{ position:relative; }
+.nav-item > a{ cursor:pointer; }
+.submenu{
+  position:absolute; top:100%; left:50%; transform:translateX(-50%);
+  padding-top:16px; opacity:0; pointer-events:none; transition:opacity .3s ease;
+}
+.nav-item.open .submenu{ opacity:1; pointer-events:auto; }
+.submenu-inner{
+  background: rgba(13,20,32,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-top:1px solid rgba(201,164,76,0.4); padding:14px 0; min-width:210px;
+}
+.submenu-inner a{
+  display:block; padding:7px 24px; font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:14.5px; color:#ece3cd; text-decoration:none; transition: color .25s ease, padding-left .25s ease;
+  white-space:nowrap; letter-spacing:normal; text-transform:none;
+}
+.submenu-inner a:hover{ color:#c9a44c; padding-left:30px; }
+
+.right-block{ display:flex; align-items:center; gap:16px; }
+.lang-switch{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.08em; color:rgba(244,239,225,0.5); display:flex; gap:6px; }
+.lang-switch button{ background:none; border:none; color:inherit; font:inherit; cursor:pointer; padding:0; }
+.lang-switch button.active{ color:#c9a44c; }
+.social-row{ display:flex; align-items:center; gap:13px; }
+.social-row a{ color:rgba(244,239,225,0.5); text-decoration:none; display:flex; transition:color .25s ease; }
+.social-row a:hover{ color:#c9a44c; }
+
+/* page title */
+.page-title{ margin-top:44px; }
+.eyebrow{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#c9a44c; letter-spacing:0.22em; text-transform:uppercase; margin-bottom:10px; }
+.page-title h1{ font-family:'Fraunces',serif; font-weight:300; font-style:italic; font-size:clamp(30px,4.2vw,52px); color:#ece3cd; }
+
+/* filters */
+.filters{ margin-top:40px; display:flex; flex-wrap:wrap; align-items:center; gap:28px; }
+.search-wrap{ position:relative; flex:1; min-width:220px; max-width:360px; }
+.search-wrap input{
+  width:100%; background:none; border:none; border-bottom:1px solid rgba(244,239,225,0.25);
+  padding:8px 4px; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:17px;
+  color:#f4efe1; outline:none; transition:border-color .3s ease;
+}
+.search-wrap input::placeholder{ color:rgba(244,239,225,0.35); }
+.search-wrap input:focus{ border-color:#c9a44c; }
+
+.select-wrap{ position:relative; }
+.select-wrap select{
+  background:none; border:none; border-bottom:1px solid rgba(244,239,225,0.25);
+  padding:8px 22px 8px 4px; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.08em;
+  text-transform:uppercase; color:#f4efe1; outline:none; cursor:pointer; appearance:none;
+  transition:border-color .3s ease;
+}
+.select-wrap select:focus{ border-color:#c9a44c; }
+.select-wrap::after{
+  content:'▾'; position:absolute; right:4px; top:9px; font-size:9px; color:rgba(244,239,225,0.5); pointer-events:none;
+}
+.select-wrap select option{ background:#141d2e; color:#f4efe1; }
+
+.clear-filters{
+  font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
+  color:rgba(244,239,225,0.4); cursor:pointer; text-decoration:underline; text-underline-offset:3px;
+  transition:color .25s ease; background:none; border:none;
+}
+.clear-filters:hover{ color:#c9a44c; }
+
+/* year timeline */
+.timeline{ margin-top:30px; overflow-x:auto; padding-bottom:6px; }
+.timeline-track{ display:flex; align-items:baseline; gap:0; min-width:max-content; position:relative; }
+.timeline-track::before{
+  content:''; position:absolute; left:0; right:0; bottom:9px; height:1px; background:rgba(244,239,225,0.15);
+}
+.year-item{
+  font-family:'JetBrains Mono',monospace; font-size:12px; color:rgba(244,239,225,0.4);
+  padding:0 16px 12px; cursor:pointer; position:relative; transition:color .3s ease; white-space:nowrap;
+}
+.year-item::after{
+  content:''; position:absolute; left:50%; bottom:6px; width:5px; height:5px; margin-left:-2.5px;
+  border-radius:50%; background:rgba(244,239,225,0.25); transition: background .3s ease, transform .3s ease;
+}
+.year-item:hover{ color:#ece3cd; }
+.year-item.active{ color:#c9a44c; font-size:15px; }
+.year-item.active::after{ background:#c9a44c; transform:scale(1.6); }
+.year-item.empty{ opacity:0.25; cursor:default; }
+.year-item.empty:hover{ color:rgba(244,239,225,0.4); }
+
+/* results list */
+.results-meta{
+  margin-top:36px; font-family:'JetBrains Mono',monospace; font-size:10.5px; color:rgba(244,239,225,0.4);
+  letter-spacing:0.08em; text-transform:uppercase;
+}
+.results-list{ margin-top:14px; }
+.entry{
+  display:flex; gap:26px; align-items:baseline; padding:18px 0; border-top:1px solid rgba(244,239,225,0.1);
+  cursor:pointer; transition: padding-left .3s ease;
+}
+.entry:last-child{ border-bottom:1px solid rgba(244,239,225,0.1); }
+.entry:hover{ padding-left:12px; }
+.entry-date{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:rgba(244,239,225,0.4); width:100px; flex-shrink:0; }
+.entry-body{ flex:1; }
+.entry-tag{ font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px; display:block; }
+.entry-title{ font-family:'Fraunces',serif; font-style:italic; font-weight:300; font-size:19px; color:#ece3cd; line-height:1.3; }
+.entry:hover .entry-title{ color:#fdfaf1; }
+.entry-excerpt{ font-size:12.5px; color:rgba(244,239,225,0.5); margin-top:6px; line-height:1.6; max-width:560px; }
+.entry-arrow{ font-family:'JetBrains Mono',monospace; font-size:14px; color:rgba(244,239,225,0.3); flex-shrink:0; transition: transform .3s ease, color .3s ease; }
+.entry:hover .entry-arrow{ transform:translateX(5px); color:#c9a44c; }
+
+.entry[data-site="nomad"] .entry-tag{ color:#e0a878; }
+.entry[data-site="music"] .entry-tag{ color:#d18e78; }
+.entry[data-site="cosmos"] .entry-tag{ color:#86b0ec; }
+.entry[data-site="reinvented"] .entry-tag{ color:#7ec2b9; }
+
+.no-results{ margin-top:40px; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:18px; color:rgba(244,239,225,0.5); }
+
+footer{ flex-shrink:0; margin-top:60px; display:flex; justify-content:space-between; align-items:center; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:rgba(244,239,225,0.4); }
+footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic; font-size:11px; color:rgba(244,239,225,0.5); }
+
+@media (max-width:800px){
+  header{ flex-wrap:wrap; gap:14px; }
+  .nav-tabs{ order:3; width:100%; flex-wrap:wrap; }
+  .entry{ flex-wrap:wrap; }
+  .entry-date{ width:auto; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<div class="page">
+  <header class="txt-shadow">
+    <a href="index.html" class="logo">GILDOR CARANTHIR NARMOLANYA</a>
+    <div class="nav-tabs">
+      <div class="nav-item">
+          <a href="#">Σχετικά</a>
+          <div class="submenu">
+            <div class="submenu-inner">
+              <a href="gildor-whoiswho.html">Who is who</a>
+              <a href="gildor-journey.html">Ιστορίες για Αγρίους</a>
+              <a href="gildor-universes.html">Τα 4 σύμπαντα</a>
+              <a href="gildor-faq.html">FAQ</a>
+            </div>
+          </div>
+        </div>
+      <a href="#" class="current">Αρχείο</a>
+      <a href="gildor-newsletter.html">Newsletter</a>
+      <a href="gildor-contact.html">Επικοινωνία</a>
+    </div>
+    <div class="right-block">
+      <div class="lang-switch"><button class="active">ΕΛ</button><span style="opacity:.4">/</span><button>EN</button></div>
+      <div class="social-row">
+        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="0.6" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 4v9.6a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 4c0 2.6 2 4.6 4.6 4.6"/></svg></a>
+        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15"><circle cx="8" cy="12" r="4" fill="currentColor"/><circle cx="16" cy="12" r="4" fill="currentColor" opacity="0.5"/></svg></a>
+        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M13.6 8.2h-1.2c-.7 0-1.1.4-1.1 1.1v1.5H9.1v1.9h2.2V16h2v-3.3h1.5l.2-1.9h-1.7v-1.2c0-.35.15-.55.6-.55h1.1V8.2z" fill="currentColor" stroke="none"/></svg></a>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-title txt-shadow">
+    <div class="eyebrow">ολόκληρη η διαδρομή</div>
+    <h1>Αρχείο</h1>
+  </div>
+
+  <div class="filters txt-shadow">
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="Αναζήτηση με λέξη-κλειδί...">
+    </div>
+    <div class="select-wrap">
+      <select id="siteSelect">
+        <option value="all">Όλα τα subdomains</option>
+        <option value="nomad">World Nomad</option>
+        <option value="music">Music of our Memories</option>
+        <option value="cosmos">Out of this World</option>
+        <option value="reinvented">Επαναπροσδιορίζομαι</option>
+      </select>
+    </div>
+    <div class="select-wrap">
+      <select id="monthSelect">
+        <option value="all">Όλοι οι μήνες</option>
+      </select>
+    </div>
+    <button class="clear-filters" id="clearFilters">καθαρισμός φίλτρων</button>
+  </div>
+
+  <div class="timeline txt-shadow">
+    <div class="timeline-track" id="timelineTrack"></div>
+  </div>
+
+  <div class="results-meta txt-shadow" id="resultsMeta"></div>
+  <div class="results-list txt-shadow" id="resultsList"></div>
+
+  <footer class="txt-shadow">
+    <div class="footer-status">[εδώ γράφεις ό,τι θες — status, quote, ό,τι σου έρθει]</div>
+    <div>© <span id="footerYear">2026</span> — ένα κοσμικό ταξίδι σε εξέλιξη</div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="gildor-enhancements.js"></script>
+<script id="pageLogic">
+document.querySelectorAll('.nav-item').forEach(item=>{
+  const trigger = item.querySelector('a');
+  trigger.addEventListener('click', (e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    item.classList.toggle('open');
+  });
+  item.querySelector('.submenu').addEventListener('click', (e)=> e.stopPropagation());
+});
+document.addEventListener('click', ()=>{
+  document.querySelectorAll('.nav-item.open').forEach(i=> i.classList.remove('open'));
+});
+
+/* ================= DEMO DATA (θα αντικατασταθεί από το CMS) ================= */
+const monthNames = ['Ιαν','Φεβ','Μαρ','Απρ','Μάι','Ιούν','Ιούλ','Αύγ','Σεπ','Οκτ','Νοέ','Δεκ'];
+const siteNames = { nomad:'World Nomad', music:'Music of our Memories', cosmos:'Out of this World', reinvented:'Επαναπροσδιορίζομαι' };
+
+const entries = [
+  { date:'2004-07-14', site:'nomad', title:'Πρώτη φορά στη Σαντορίνη', excerpt:'Σημειώσεις από ένα καλοκαίρι που άλλαξε πώς βλέπω τα ταξίδια.' },
+  { date:'2006-11-02', site:'cosmos', title:'Η πρώτη έκλειψη που παρακολούθησα', excerpt:'Μια νύχτα στην ταράτσα, με ένα τηλεσκόπιο δανεικό.' },
+  { date:'2009-08-12', site:'cosmos', title:'Η βροχή των Περσειδών από το χωριό', excerpt:'Ο ουρανός χωρίς φώτα πόλης είναι κάτι εντελώς διαφορετικό.' },
+  { date:'2011-03-21', site:'music', title:'Το τραγούδι που άκουσα σε ένα τρένο στη Γερμανία', excerpt:'Δεν ήξερα τη γλώσσα, αλλά κατάλαβα τη μελωδία.' },
+  { date:'2014-06-05', site:'nomad', title:'Δρόμοι στην Καππαδοκία', excerpt:'Πέτρινα σπίτια σκαλισμένα στον χρόνο.' },
+  { date:'2016-09-18', site:'reinvented', title:'Οι πρώτες σημειώσεις για το βιβλίο', excerpt:'Μια ιδέα που γεννήθηκε σε ένα τετράδιο, όχι σε υπολογιστή.' },
+  { date:'2018-01-09', site:'music', title:'Ένα τραγούδι, ένα λιμάνι, μια αποχώρηση', excerpt:'Η ιστορία πίσω από ένα κομμάτι που δεν με άφησε ποτέ.' },
+  { date:'2020-05-30', site:'cosmos', title:'Παρατηρώντας τον Δία από το μπαλκόνι', excerpt:'Την περίοδο της καραντίνας, ο ουρανός ήταν το μόνο ταξίδι.' },
+  { date:'2021-10-11', site:'nomad', title:'Νύχτα στη Χαλκιδική', excerpt:'Ένα βράδυ που δεν σχεδίασα, αλλά θυμάμαι καθαρά.' },
+  { date:'2022-04-02', site:'reinvented', title:'Κεφάλαιο 1 — Το πρώτο βήμα', excerpt:'Πώς ξεκινάει κανείς να επαναπροσδιορίζεται;' },
+  { date:'2023-08-09', site:'cosmos', title:'Η βροχή των Περσειδών φέτος', excerpt:'Ο ουρανός της Αττικής τα μεσάνυχτα του Αυγούστου.' },
+  { date:'2024-07-21', site:'nomad', title:'Τρεις μέρες στα ριζά της Πίνδου', excerpt:'Ένα μονοπάτι που δεν είχα σκοπό να περπατήσω.' },
+  { date:'2025-12-03', site:'music', title:'Το τραγούδι που έγραψε ένα λιμάνι', excerpt:'Μια ιστορία από ένα ταξίδι που δεν με άφησε ποτέ.' },
+  { date:'2026-07-28', site:'reinvented', title:'Κεφάλαιο 3 — Η σιωπή ανάμεσα στους σταθμούς', excerpt:'Ένα απόσπασμα από το βιβλίο, τώρα διαθέσιμο και σε φωνή.' },
+  { date:'2026-08-12', site:'nomad', title:'Τρεις μέρες στα ριζά της Πίνδου', excerpt:'Σημειώσεις και βίντεο από ένα μονοπάτι που με βρήκε.' },
+];
+
+/* ================= state ================= */
+let state = { keyword:'', site:'all', year:'all', month:'all' };
+
+/* build year timeline from actual data range */
+const years = entries.map(e=> parseInt(e.date.slice(0,4)));
+const minYear = Math.min(...years), maxYear = Math.max(...years);
+const yearsWithData = new Set(years);
+
+const timelineTrack = document.getElementById('timelineTrack');
+let timelineHTML = `<div class="year-item active" data-year="all">Όλα</div>`;
+for(let y=minYear; y<=maxYear; y++){
+  const has = yearsWithData.has(y);
+  timelineHTML += `<div class="year-item ${has?'':'empty'}" data-year="${y}">${y}</div>`;
+}
+timelineTrack.innerHTML = timelineHTML;
+
+/* month select population based on selected year */
+const monthSelect = document.getElementById('monthSelect');
+function populateMonths(){
+  let relevant = entries;
+  if(state.year !== 'all') relevant = relevant.filter(e=> e.date.slice(0,4) === state.year);
+  const monthsAvailable = new Set(relevant.map(e=> parseInt(e.date.slice(5,7))));
+  monthSelect.innerHTML = '<option value="all">Όλοι οι μήνες</option>' +
+    [...monthsAvailable].sort((a,b)=>a-b).map(m=> `<option value="${m}">${monthNames[m-1]}</option>`).join('');
+}
+populateMonths();
+
+/* ================= rendering ================= */
+const resultsList = document.getElementById('resultsList');
+const resultsMeta = document.getElementById('resultsMeta');
+
+function render(){
+  let filtered = entries.filter(e=>{
+    if(state.keyword && !(e.title.toLowerCase().includes(state.keyword) || e.excerpt.toLowerCase().includes(state.keyword))) return false;
+    if(state.site !== 'all' && e.site !== state.site) return false;
+    if(state.year !== 'all' && e.date.slice(0,4) !== state.year) return false;
+    if(state.month !== 'all' && parseInt(e.date.slice(5,7)) !== parseInt(state.month)) return false;
+    return true;
+  });
+  filtered.sort((a,b)=> b.date.localeCompare(a.date));
+
+  resultsMeta.textContent = `${filtered.length} καταχωρήσεις`;
+
+  if(filtered.length === 0){
+    resultsList.innerHTML = '<div class="no-results">Καμία καταχώρηση δεν ταιριάζει με αυτά τα φίλτρα — δοκίμασε κάτι διαφορετικό.</div>';
+    return;
+  }
+
+  resultsList.innerHTML = filtered.map(e=>{
+    const d = new Date(e.date);
+    const dateLabel = `${String(d.getDate()).padStart(2,'0')} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+    return `<div class="entry" data-site="${e.site}">
+      <div class="entry-date">${dateLabel}</div>
+      <div class="entry-body">
+        <span class="entry-tag">${siteNames[e.site]}</span>
+        <div class="entry-title">${e.title}</div>
+        <div class="entry-excerpt">${e.excerpt}</div>
+      </div>
+      <div class="entry-arrow">→</div>
+    </div>`;
+  }).join('');
+}
+render();
+
+/* ================= interactions ================= */
+document.getElementById('searchInput').addEventListener('input', (e)=>{
+  state.keyword = e.target.value.trim().toLowerCase();
+  render();
+});
+document.getElementById('siteSelect').addEventListener('change', (e)=>{
+  state.site = e.target.value; render();
+});
+monthSelect.addEventListener('change', (e)=>{
+  state.month = e.target.value; render();
+});
+timelineTrack.addEventListener('click', (e)=>{
+  const item = e.target.closest('.year-item');
+  if(!item || item.classList.contains('empty')) return;
+  document.querySelectorAll('.year-item').forEach(y=>y.classList.remove('active'));
+  item.classList.add('active');
+  state.year = item.dataset.year;
+  state.month = 'all';
+  populateMonths();
+  render();
+});
+document.getElementById('clearFilters').addEventListener('click', ()=>{
+  state = { keyword:'', site:'all', year:'all', month:'all' };
+  document.getElementById('searchInput').value = '';
+  document.getElementById('siteSelect').value = 'all';
+  document.querySelectorAll('.year-item').forEach(y=>y.classList.remove('active'));
+  document.querySelector('.year-item[data-year="all"]').classList.add('active');
+  populateMonths();
+  render();
+});
+
+</script>
+
+<script id="shaderInit">
+if(!window.gildorSceneInitialized){
+window.gildorSceneInitialized = true;
+
+/* ================= shader background (same as homepage, for continuity) ================= */
+let webglSupported = true;
+try{
+  const testCanvas = document.createElement('canvas');
+  webglSupported = !!(window.WebGLRenderingContext &&
+    (testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl')));
+}catch(e){ webglSupported = false; }
+
+if(!webglSupported){
+  // no WebGL available — fall back to a static CSS gradient instead of a
+  // blank/broken canvas, so the site still looks intentional
+  document.body.classList.add('gildor-no-webgl');
+} else {
+try{
+
+const canvas = document.getElementById('bg');
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, preserveDrawingBuffer:true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+
+const uniforms = {
+  uTime:{value:0}, uMouse:{value:new THREE.Vector2(0.5,0.5)}, uMouseTarget:{value:new THREE.Vector2(0.5,0.5)},
+  uRes:{value:new THREE.Vector2(window.innerWidth, window.innerHeight)},
+  cNight:{value:new THREE.Color('#0d1420')}, cTeal:{value:new THREE.Color('#2f5a58')},
+  cGold:{value:new THREE.Color('#c9a44c')}, cClay:{value:new THREE.Color('#7a4436')},
+  uSeed:{value: window.gildorSeed || 0}, uDayMix:{value: window.gildorDayMix || 0}
+};
+window.gildorUniforms = uniforms;
+const vertexShader = `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position,1.0); }`;
+const noiseGLSL = `
+vec3 mod289(vec3 x){return x - floor(x * (1.0/289.0)) * 289.0;}
+vec2 mod289(vec2 x){return x - floor(x * (1.0/289.0)) * 289.0;}
+vec3 permute(vec3 x){return mod289(((x*34.0)+1.0)*x);}
+float snoise(vec2 v){
+  const vec4 C = vec4(0.211324865405187,0.366025403784439,-0.577350269189626,0.024390243902439);
+  vec2 i = floor(v + dot(v, C.yy));
+  vec2 x0 = v - i + dot(i, C.xx);
+  vec2 i1 = (x0.x > x0.y) ? vec2(1.0,0.0) : vec2(0.0,1.0);
+  vec4 x12 = x0.xyxy + C.xxzz;
+  x12.xy -= i1;
+  i = mod289(i);
+  vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+  vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+  m = m*m; m = m*m;
+  vec3 x = 2.0 * fract(p * C.www) - 1.0;
+  vec3 h = abs(x) - 0.5;
+  vec3 ox = floor(x + 0.5);
+  vec3 a0 = x - ox;
+  m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+  vec3 g;
+  g.x = a0.x * x0.x + h.x * x0.y;
+  g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+  return 130.0 * dot(m, g);
+}`;
+const fragmentShader = `
+precision highp float;
+varying vec2 vUv;
+uniform float uTime, uSeed, uDayMix;
+uniform vec2 uMouse, uRes;
+uniform vec3 cNight, cTeal, cGold, cClay;
+${noiseGLSL}
+vec2 curl(vec2 p, float t){
+  float eps=0.6;
+  float n1=snoise(vec2(p.x,p.y+eps)+t);
+  float n2=snoise(vec2(p.x,p.y-eps)+t);
+  float n3=snoise(vec2(p.x+eps,p.y)+t);
+  float n4=snoise(vec2(p.x-eps,p.y)+t);
+  return vec2((n1-n2)/(2.0*eps),(n4-n3)/(2.0*eps));
+}
+void main(){
+  vec2 uv = vUv;
+  float aspect = uRes.x/uRes.y;
+  vec2 p = (uv-0.5) * vec2(aspect,1.0) * 2.2;
+  p += vec2(uSeed*0.37, uSeed*0.61); // generative: unique flow field per visit
+  vec2 mouseInfluence = (uMouse-0.5) * vec2(aspect,1.0) * 2.2;
+  float t = uTime*0.045;
+  vec2 flow = curl(p*0.8 + mouseInfluence*0.2, t);
+  p += flow*0.4;
+  float n1 = snoise(p*1.3 + vec2(t*1.3,-t*0.7));
+  float n2 = snoise(p*2.6 - vec2(t*0.8,t*1.1) + 4.0);
+  float n3 = snoise(p*5.0 + vec2(t*2.0,t*0.4) + 9.0);
+  float blob = n1*0.55 + n2*0.30 + n3*0.15;
+  blob = smoothstep(-0.15,0.65,blob);
+  vec3 col = mix(cNight, cTeal, blob*0.55);
+  col = mix(col, cClay, smoothstep(0.6,0.95,n2)*0.22);
+  col = mix(col, cGold, smoothstep(0.75,1.0,n3)*0.22);
+
+  // time-of-day tint
+  col += cGold * max(uDayMix,0.0) * 0.06;
+  col = mix(col, cNight*0.75, max(-uDayMix,0.0)*0.22);
+  float vig = smoothstep(1.3,0.2,length(p));
+  col *= mix(0.5,1.0,vig);
+  float grain = fract(sin(dot(uv*uRes.xy, vec2(12.9898,78.233))) * 43758.5453);
+  col += (grain-0.5)*0.015;
+  gl_FragColor = vec4(col,1.0);
+}`;
+const material = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader });
+scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2), material));
+window.addEventListener('resize', ()=>{
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  uniforms.uRes.value.set(window.innerWidth, window.innerHeight);
+});
+window.addEventListener('mousemove', (e)=>{
+  uniforms.uMouseTarget.value.set(e.clientX/window.innerWidth, 1.0 - e.clientY/window.innerHeight);
+});
+const clock = new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  uniforms.uTime.value = clock.getElapsedTime();
+  uniforms.uMouse.value.lerp(uniforms.uMouseTarget.value, 0.03);
+  renderer.render(scene, camera);
+}
+animate();
+
+
+}catch(err){
+  // WebGL context creation or shader compilation failed unexpectedly —
+  // fall back gracefully instead of leaving a broken/blank canvas
+  console.error('Gildor: WebGL init failed, using fallback background.', err);
+  document.body.classList.add('gildor-no-webgl');
+}
+} // end webglSupported check
+
+} // end window.gildorSceneInitialized guard
+</script>
+
+</body>
+</html>
