@@ -333,3 +333,48 @@
   }
 
 })();
+
+
+/* ============================================================
+   GILDOR — CMS connection (Sanity)
+   Reads published content from the Sanity project. While
+   PROJECT_ID is not filled in, everything stays disabled and every
+   page simply keeps its built-in placeholder text.
+   ============================================================ */
+(function(){
+  const PROJECT_ID = 't6wpnbue';   // <-- the 8-character project id from Sanity
+  const DATASET = 'production';
+  const API_VERSION = 'v2025-02-19';
+  const TIMEOUT_MS = 7000;
+
+  const enabled = /^[a-z0-9]{6,12}$/.test(PROJECT_ID);
+
+  function lang(){
+    try{ return localStorage.getItem('gildorLang') || 'el'; }catch(err){ return 'el'; }
+  }
+
+  // Picks the visitor's language from a {el, en} field, falling back to Greek.
+  function pick(field){
+    if(field == null) return '';
+    if(typeof field === 'string') return field;
+    return field[lang()] || field.el || '';
+  }
+
+  async function query(groq){
+    if(!enabled) return null;
+    const ctrl = new AbortController();
+    const timer = setTimeout(()=> ctrl.abort(), TIMEOUT_MS);
+    try{
+      const url = 'https://' + PROJECT_ID + '.apicdn.sanity.io/' + API_VERSION +
+                  '/data/query/' + DATASET + '?query=' + encodeURIComponent(groq);
+      const res = await fetch(url, { signal: ctrl.signal });
+      if(!res.ok) throw new Error('Sanity responded ' + res.status);
+      const json = await res.json();
+      return json.result;
+    }finally{
+      clearTimeout(timer);
+    }
+  }
+
+  window.gildorCMS = { enabled, query, pick, lang };
+})();
