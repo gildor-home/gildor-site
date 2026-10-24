@@ -8,7 +8,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Jost:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
 
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;}
+html,body{height:100%; overflow-x:hidden; max-width:100%;}
 body{ background:#0d1420; color:#f4efe1; font-family:'Jost',sans-serif; font-weight:300; }
 canvas#bg{ position:fixed; inset:0; z-index:0; display:block; }
 .gildor-no-webgl #bg{ display:none; }
@@ -104,6 +104,14 @@ footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic
   header{ flex-wrap:wrap; gap:14px; }
   .nav-tabs{ order:3; width:100%; flex-wrap:wrap; }
 }
+
+@media (max-width:480px){
+  .submenu{ left:0; transform:none; right:auto; }
+}
+
+@media (max-width:600px){
+  footer{ flex-direction:column; gap:8px; text-align:center; }
+}
 </style>
 </head>
 <body>
@@ -182,7 +190,7 @@ footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic
     <div class="faq-item" data-cat="reinvented">
       <div class="faq-q">
         <div class="faq-dot"></div>
-        <div class="faq-q-text">[Placeholder ερώτηση — Επαναπροσδιορίζομαι]</div>
+        <div class="faq-q-text">[Placeholder ερώτηση — Απάτητες Διαδρομές]</div>
         <div class="faq-arrow">+</div>
       </div>
       <div class="faq-a"><p>[Placeholder απάντηση. Κάθε νέα ερώτηση προστίθεται εδώ αργότερα μέσα από το CMS.]</p></div>
@@ -216,6 +224,51 @@ document.querySelectorAll('.faq-q').forEach(q=>{
     q.closest('.faq-item').classList.toggle('open');
   });
 });
+
+/* ---- content from the CMS (Sanity). If anything fails or there are no
+   published entries yet, the placeholder questions above simply stay. ---- */
+(function(){
+  const cms = window.gildorCMS;
+  const list = document.getElementById('faqList');
+  if(!cms || !cms.enabled || !list) return;
+
+  list.style.transition = 'opacity .3s ease';
+  list.style.opacity = '0';
+
+  cms.query('*[_type=="faqItem"] | order(coalesce(order, 9999) asc, _createdAt asc){question, answer, category}')
+    .then(items=>{
+      if(!list.isConnected || !Array.isArray(items)) return;
+      const frag = document.createDocumentFragment();
+      items.forEach(it=>{
+        const qText = cms.pick(it.question);
+        if(!qText) return;
+        const item = document.createElement('div');
+        item.className = 'faq-item';
+        item.dataset.cat = it.category || 'general';
+
+        const q = document.createElement('div');
+        q.className = 'faq-q';
+        const dot = document.createElement('div'); dot.className = 'faq-dot';
+        const txt = document.createElement('div'); txt.className = 'faq-q-text'; txt.textContent = qText;
+        const arrow = document.createElement('div'); arrow.className = 'faq-arrow'; arrow.textContent = '+';
+        q.append(dot, txt, arrow);
+        q.addEventListener('click', ()=> item.classList.toggle('open'));
+
+        const a = document.createElement('div');
+        a.className = 'faq-a';
+        String(cms.pick(it.answer)).split(/\n\s*\n/).forEach(par=>{
+          if(!par.trim()) return;
+          const p = document.createElement('p'); p.textContent = par.trim(); a.appendChild(p);
+        });
+
+        item.append(q, a);
+        frag.appendChild(item);
+      });
+      if(frag.childNodes.length) list.replaceChildren(frag);
+    })
+    .catch(err=> console.warn('Gildor CMS: keeping placeholder FAQ.', err))
+    .finally(()=>{ if(list.isConnected) list.style.opacity = '1'; });
+})();
 </script>
 
 <script id="shaderInit">
