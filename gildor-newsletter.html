@@ -8,7 +8,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Jost:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
 
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;}
+html,body{height:100%; overflow-x:hidden; max-width:100%;}
 body{ background:#0d1420; color:#f4efe1; font-family:'Jost',sans-serif; font-weight:300; }
 canvas#bg{ position:fixed; inset:0; z-index:0; display:block; }
 .gildor-no-webgl #bg{ display:none; }
@@ -137,6 +137,14 @@ footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic
   .issue{ flex-wrap:wrap; }
   .issue-num{ width:auto; }
 }
+
+@media (max-width:480px){
+  .submenu{ left:0; transform:none; right:auto; }
+}
+
+@media (max-width:600px){
+  footer{ flex-direction:column; gap:8px; text-align:center; }
+}
 </style>
 </head>
 <body>
@@ -165,18 +173,18 @@ footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic
     <div class="right-block">
       <div class="lang-switch"><button class="active">ΕΛ</button><span style="opacity:.4">/</span><button>EN</button></div>
       <div class="social-row">
-        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="0.6" fill="currentColor" stroke="none"/></svg></a>
-        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 4v9.6a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 4c0 2.6 2 4.6 4.6 4.6"/></svg></a>
-        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15"><circle cx="8" cy="12" r="4" fill="currentColor"/><circle cx="16" cy="12" r="4" fill="currentColor" opacity="0.5"/></svg></a>
-        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M13.6 8.2h-1.2c-.7 0-1.1.4-1.1 1.1v1.5H9.1v1.9h2.2V16h2v-3.3h1.5l.2-1.9h-1.7v-1.2c0-.35.15-.55.6-.55h1.1V8.2z" fill="currentColor" stroke="none"/></svg></a>
+        <a data-cms-href="instagram" href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="0.6" fill="currentColor" stroke="none"/></svg></a>
+        <a data-cms-href="tiktok" href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 4v9.6a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 4c0 2.6 2 4.6 4.6 4.6"/></svg></a>
+        <a data-cms-href="flickr" href="#"><svg viewBox="0 0 24 24" width="15" height="15"><circle cx="8" cy="12" r="4" fill="currentColor"/><circle cx="16" cy="12" r="4" fill="currentColor" opacity="0.5"/></svg></a>
+        <a data-cms-href="facebook" href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M13.6 8.2h-1.2c-.7 0-1.1.4-1.1 1.1v1.5H9.1v1.9h2.2V16h2v-3.3h1.5l.2-1.9h-1.7v-1.2c0-.35.15-.55.6-.55h1.1V8.2z" fill="currentColor" stroke="none"/></svg></a>
       </div>
     </div>
   </header>
 
   <div class="signup-hero txt-shadow">
-    <div class="eyebrow">ένα γράμμα, κάθε τόσο</div>
-    <h1>Ό,τι δεν χωράει <em>πουθενά αλλού</em>, καταλήγει εδώ.</h1>
-    <p class="sub">[Placeholder κείμενο — θα το γράψεις εσύ αργότερα: γιατί αξίζει η εγγραφή, τι θα λαμβάνει κανείς.]</p>
+    <div class="eyebrow" data-cms="newsletterEyebrow">ένα γράμμα, κάθε τόσο</div>
+    <h1 data-cms="newsletterTitle" data-cms-inline>Ό,τι δεν χωράει <em>πουθενά αλλού</em>, καταλήγει εδώ.</h1>
+    <p class="sub" data-cms="newsletterSub">[Placeholder κείμενο — θα το γράψεις εσύ αργότερα: γιατί αξίζει η εγγραφή, τι θα λαμβάνει κανείς.]</p>
 
     <form class="email-form" id="signupForm">
       <input type="email" id="emailInput" placeholder="το email σου" required>
@@ -185,11 +193,11 @@ footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic
 
     <div class="success-msg" id="successMsg">Έγινε — καλώς ήρθες στη λίστα.</div>
 
-    <div class="freq-note"><span class="dot"></span> [συχνότητα αποστολής — θα οριστεί] · κανένα spam, ποτέ</div>
+    <div class="freq-note"><span class="dot"></span> <span data-cms="newsletterFrequency">[συχνότητα αποστολής — θα οριστεί] · κανένα spam, ποτέ</span></div>
   </div>
 
   <div class="past-issues txt-shadow">
-    <div class="section-label">παλιότερα τεύχη</div>
+    <div class="section-label" data-cms="issuesTitle">παλιότερα τεύχη</div>
 
     <div class="issue">
       <div class="issue-num">Τεύχος 03</div>
@@ -218,14 +226,15 @@ footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic
   </div>
 
   <footer class="txt-shadow">
-    <div class="footer-status">[εδώ γράφεις ό,τι θες — status, quote, ό,τι σου έρθει]</div>
-    <div>© <span id="footerYear">2026</span> — ένα κοσμικό ταξίδι σε εξέλιξη</div>
+    <div class="footer-status" data-cms="footerStatus">[εδώ γράφεις ό,τι θες — status, quote, ό,τι σου έρθει]</div>
+    <div>© <span id="footerYear">2026</span> — <span data-cms="footerTagline">ένα κοσμικό ταξίδι σε εξέλιξη</span></div>
   </footer>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="gildor-enhancements.js"></script>
 <script id="pageLogic">
+if(window.gildorCMS) gildorCMS.bind();
 document.querySelectorAll('.nav-item').forEach(item=>{
   const trigger = item.querySelector('a');
   trigger.addEventListener('click', (e)=>{
@@ -247,6 +256,39 @@ document.getElementById('signupForm').addEventListener('submit', (e)=>{
   document.getElementById('successMsg').classList.add('show');
 });
 
+
+/* ---- past issues from the CMS. With none published, the placeholders stay. ---- */
+(function(){
+  const cms = window.gildorCMS;
+  const box = document.querySelector('.past-issues');
+  if(!cms || !cms.enabled || !box) return;
+  cms.query('*[_type=="issue"] | order(number desc){number, title, summary, url}')
+    .then(items=>{
+      if(!box.isConnected || !Array.isArray(items)) return;
+      const rows = items.map(it=>{
+        const title = cms.pick(it.title);
+        if(!title) return null;
+        const hasUrl = /^https?:\/\//i.test(it.url || '');
+        const row = document.createElement(hasUrl ? 'a' : 'div');
+        row.className = 'issue';
+        if(hasUrl){ row.href = it.url; row.target = '_blank'; row.rel = 'noopener'; row.style.textDecoration = 'none'; row.style.color = 'inherit'; }
+        const num = document.createElement('div'); num.className = 'issue-num';
+        num.textContent = (cms.lang() === 'en' ? 'Issue ' : 'Τεύχος ') + String(it.number == null ? '' : it.number).padStart(2, '0');
+        const bodyEl = document.createElement('div'); bodyEl.className = 'issue-body';
+        const t = document.createElement('div'); t.className = 'issue-title'; t.textContent = title;
+        bodyEl.appendChild(t);
+        const sum = cms.pick(it.summary);
+        if(sum){ const x = document.createElement('div'); x.className = 'issue-excerpt'; x.textContent = sum; bodyEl.appendChild(x); }
+        const arrow = document.createElement('div'); arrow.className = 'issue-arrow'; arrow.textContent = '→';
+        row.append(num, bodyEl, arrow);
+        return row;
+      }).filter(Boolean);
+      if(!rows.length) return;
+      box.querySelectorAll('.issue').forEach(el=> el.remove());
+      rows.forEach(r=> box.appendChild(r));
+    })
+    .catch(err=> console.warn('Gildor CMS: keeping the placeholder issues.', err));
+})();
 </script>
 
 <script id="shaderInit">

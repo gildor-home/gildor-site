@@ -337,17 +337,29 @@
 
 /* ============================================================
    GILDOR — CMS connection (Sanity)
-   Reads published content from the Sanity project. While
-   PROJECT_ID is not filled in, everything stays disabled and every
-   page simply keeps its built-in placeholder text.
+   Reads published content from the Sanity project. If anything fails,
+   or nothing is published yet, every page simply keeps its built-in text.
+
+   Pages mark what the CMS may replace with attributes:
+     data-cms="field"            text from Site Settings  (e.g. footerStatus)
+     data-cms="portal:nomad.name" a field of one of the 4 universes
+     data-cms-inline             allow *highlighted* words (becomes <em>)
+     data-cms-href="instagram"   link from Site Settings
    ============================================================ */
 (function(){
   const PROJECT_ID = 't6wpnbue';   // <-- the 8-character project id from Sanity
   const DATASET = 'production';
   const API_VERSION = 'v2025-02-19';
   const TIMEOUT_MS = 7000;
+  const HIDE_MS = 2500;            // never keep text hidden longer than this
 
   const enabled = /^[a-z0-9]{6,12}$/.test(PROJECT_ID);
+
+  const SITE_NAMES = {
+    nomad: 'World Nomad', music: 'Music of our Memories',
+    cosmos: 'Out of this World', reinvented: 'Απάτητες Διαδρομές'
+  };
+  const MONTHS_SHORT = ['ΙΑΝ','ΦΕΒ','ΜΑΡ','ΑΠΡ','ΜΑΪ','ΙΟΥΝ','ΙΟΥΛ','ΑΥΓ','ΣΕΠ','ΟΚΤ','ΝΟΕ','ΔΕΚ'];
 
   function lang(){
     try{ return localStorage.getItem('gildorLang') || 'el'; }catch(err){ return 'el'; }
@@ -367,7 +379,7 @@
     try{
       const url = 'https://' + PROJECT_ID + '.apicdn.sanity.io/' + API_VERSION +
                   '/data/query/' + DATASET + '?query=' + encodeURIComponent(groq);
-      const res = await fetch(url, { signal: ctrl.signal });
+      const res = await fetch(url, { signal: ctrl.signal, cache: 'no-cache' });
       if(!res.ok) throw new Error('Sanity responded ' + res.status);
       const json = await res.json();
       return json.result;
@@ -376,5 +388,160 @@
     }
   }
 
-  window.gildorCMS = { enabled, query, pick, lang };
+  /* ---------- Site Settings (fetched once, remembered for the visit) ---------- */
+  const SETTINGS_QUERY = '*[_type=="siteSettings"] | order(_updatedAt desc)[0]';
+  let settingsPromise = null;
+
+  function cachedSettings(){
+    try{ return JSON.parse(sessionStorage.getItem('gildorSettings') || 'null'); }catch(err){ return null; }
+  }
+  function settings(){
+    if(!enabled) return Promise.resolve(null);
+    if(!settingsPromise){
+      settingsPromise = query(SETTINGS_QUERY).then(r=>{
+        if(r){ try{ sessionStorage.setItem('gildorSettings', JSON.stringify(r)); }catch(err){} }
+        return r || null;
+      }).catch(()=> null);
+    }
+    return settingsPromise;
+  }
+
+  function portalOf(s, key){
+    return ((s && s.portals) || []).find(p=> p && p.key === key) || null;
+  }
+  function siteName(s, key){
+    const pt = portalOf(s, key);
+    return (pt && pick(pt.name)) || SITE_NAMES[key] || key;
+  }
+
+  // reads "footerStatus" or "portal:nomad.name" out of the settings
+  function valueFor(s, key){
+    const m = /^portal:([a-z]+)\.(\w+)$/.exec(key);
+    if(m){ const pt = portalOf(s, m[1]); return pt ? pt[m[2]] : null; }
+    return s ? s[key] : null;
+  }
+
+  // "some *highlighted* words" -> text + <em>highlighted</em> (or another tag/class)
+  function inline(el, text, tag, cls){
+    el.textContent = '';
+    String(text).split(/\*([^*]+)\*/).forEach((part, i)=>{
+      if(i % 2){
+        const t = document.createElement(tag || 'em');
+        if(cls) t.className = cls;
+        t.textContent = part;
+        el.appendChild(t);
+      }else if(part){
+        el.appendChild(document.createTextNode(part));
+      }
+    });
+  }
+
+  function applyTo(nodes, s){
+    nodes.forEach(n=>{
+      const key = n.getAttribute('data-cms');
+      if(key){
+        const text = pick(valueFor(s, key));
+        if(text){
+          if(n.hasAttribute('data-cms-inline')) inline(n, text);
+          else{ n.textContent = text; if(text.indexOf('\n') >= 0) n.style.whiteSpace = 'pre-line'; }
+        }
+      }
+      let hrefKey = n.getAttribute('data-cms-href');
+      if(hrefKey){
+        let prefix = '';
+        if(hrefKey.indexOf('mailto:') === 0){ prefix = 'mailto:'; hrefKey = hrefKey.slice(7); }
+        const url = valueFor(s, hrefKey);
+        if(typeof url === 'string' && url.trim()){
+          n.setAttribute('href', prefix + url.trim());
+          if(!prefix && /^https?:/i.test(url)){ n.setAttribute('target', '_blank'); n.setAttribute('rel', 'noopener'); }
+        }
+      }
+    });
+  }
+
+  // Fills every data-cms element on the current page. Remembers the last answer
+  // so later pages fill instantly, without a flash of the built-in text.
+  function bind(){
+    if(!enabled) return;
+    const nodes = [...document.querySelectorAll('[data-cms],[data-cms-href]')];
+    if(!nodes.length) return;
+    const cached = cachedSettings();
+    const toHide = cached ? [] : nodes.filter(n=> n.hasAttribute('data-cms'));
+    if(cached) applyTo(nodes, cached);
+    toHide.forEach(n=>{ n.style.transition = 'opacity .25s ease'; n.style.opacity = '0'; });
+    const reveal = ()=> toHide.forEach(n=>{ if(n.isConnected) n.style.opacity = '1'; });
+    const timer = setTimeout(reveal, HIDE_MS);
+    settings().then(s=>{ if(s) applyTo(nodes.filter(n=> n.isConnected), s); })
+      .finally(()=>{ clearTimeout(timer); reveal(); });
+  }
+
+  /* ---------- small helpers pages can use ---------- */
+  function shortDate(dateStr){
+    const d = new Date(dateStr + 'T12:00:00');
+    if(isNaN(d)) return '';
+    return String(d.getDate()).padStart(2, '0') + ' ' + MONTHS_SHORT[d.getMonth()];
+  }
+  function longDate(dateStr){
+    const d = new Date(dateStr + 'T12:00:00');
+    if(isNaN(d)) return '';
+    return d.toLocaleDateString(lang() === 'en' ? 'en-GB' : 'el-GR', {day:'numeric', month:'long', year:'numeric'});
+  }
+  function imageUrl(url, w){
+    return url ? url + '?w=' + (w || 900) + '&auto=format' : '';
+  }
+
+  // Sanity "block content" (the rich text with images) -> safe HTML elements
+  function blockSpans(b){
+    const defs = {};
+    (b.markDefs || []).forEach(d=>{ defs[d._key] = d; });
+    return (b.children || []).map(ch=>{
+      let node = document.createTextNode(ch.text || '');
+      (ch.marks || []).forEach(m=>{
+        let wrap = null;
+        if(m === 'strong') wrap = document.createElement('strong');
+        else if(m === 'em') wrap = document.createElement('em');
+        else if(m === 'underline') wrap = document.createElement('u');
+        else if(m === 'code') wrap = document.createElement('code');
+        else if(defs[m] && defs[m]._type === 'link' && /^(https?:|mailto:)/i.test(defs[m].href || '')){
+          wrap = document.createElement('a');
+          wrap.href = defs[m].href; wrap.target = '_blank'; wrap.rel = 'noopener';
+        }
+        if(wrap){ wrap.appendChild(node); node = wrap; }
+      });
+      return node;
+    });
+  }
+  function renderBlocks(blocks, container){
+    container.textContent = '';
+    let list = null, listTag = null;
+    (blocks || []).forEach(b=>{
+      if(!b) return;
+      if(b._type === 'image'){
+        list = null;
+        if(b.url){
+          const img = document.createElement('img');
+          img.src = imageUrl(b.url, 900); img.alt = ''; img.loading = 'lazy'; img.className = 'cms-img';
+          container.appendChild(img);
+        }
+        return;
+      }
+      if(b._type !== 'block') return;
+      const kids = blockSpans(b);
+      if(b.listItem){
+        const tag = b.listItem === 'number' ? 'ol' : 'ul';
+        if(!list || listTag !== tag){ list = document.createElement(tag); listTag = tag; container.appendChild(list); }
+        const li = document.createElement('li'); kids.forEach(k=> li.appendChild(k)); list.appendChild(li);
+        return;
+      }
+      list = null;
+      const tag = ({h1:'h2', h2:'h2', h3:'h3', h4:'h4', blockquote:'blockquote'})[b.style] || 'p';
+      const el = document.createElement(tag); kids.forEach(k=> el.appendChild(k)); container.appendChild(el);
+    });
+  }
+
+  window.gildorCMS = {
+    enabled, query, pick, lang,
+    settings, cachedSettings, bind, inline,
+    portalOf, siteName, shortDate, longDate, imageUrl, renderBlocks, SITE_NAMES
+  };
 })();

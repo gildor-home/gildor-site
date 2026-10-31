@@ -8,7 +8,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Jost:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
 
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;}
+html,body{height:100%; overflow-x:hidden; max-width:100%;}
 body{ background:#0d1420; color:#f4efe1; font-family:'Jost',sans-serif; font-weight:300; }
 canvas#bg{ position:fixed; inset:0; z-index:0; display:block; }
 .gildor-no-webgl #bg{ display:none; }
@@ -157,6 +157,23 @@ header{ display:flex; justify-content:space-between; align-items:flex-start; fle
   0%,100%{ transform:scale(0.85); opacity:0.75; }
   50%{ transform:scale(1.15); opacity:1; }
 }
+/* a star highlighted from outside (hovering its name in the list) */
+.tree-star.hl path{
+  animation-play-state:paused; opacity:1; transform:scale(1.4) !important;
+  filter: drop-shadow(0 0 4px #8cc8eb) drop-shadow(0 0 12px #8cc8eb) drop-shadow(0 0 22px rgba(140,200,235,1));
+}
+/* story text coming from the CMS */
+.overlay-date{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.18em; text-transform:uppercase; color:rgba(201,164,76,0.85); margin:-8px 0 20px; }
+.overlay-body .cms-img{ width:100%; height:auto; display:block; margin:0 0 22px; border:1px solid rgba(201,164,76,0.25); }
+.overlay-body > .cms-img{ max-height:280px; object-fit:cover; }
+.overlay-text .cms-img{ max-height:60vh; object-fit:contain; margin:6px 0 20px; }
+.overlay-text p{ margin:0 0 16px; }
+.overlay-text h2, .overlay-text h3, .overlay-text h4{ font-family:'Fraunces',serif; font-style:italic; font-weight:300; color:#e0c37a; margin:26px 0 10px; line-height:1.3; }
+.overlay-text h2{ font-size:22px; } .overlay-text h3{ font-size:19px; } .overlay-text h4{ font-size:16px; }
+.overlay-text blockquote{ margin:20px 0; padding-left:16px; border-left:2px solid rgba(201,164,76,0.5); font-style:italic; color:rgba(244,239,225,0.88); }
+.overlay-text ul, .overlay-text ol{ margin:0 0 16px 20px; }
+.overlay-text li{ margin-bottom:6px; }
+.overlay-text a{ color:#e0c37a; }
 .tree-star.p1{ top:13%; left:56%; }
 .tree-star.p2{ top:30%; left:41%; }
 .tree-star.p3{ top:26%; left:58%; }
@@ -250,6 +267,14 @@ footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic
   .story-list{ max-width:100%; width:100%; }
   .tree-wrap{ height:min(50vh, 420px); }
 }
+
+@media (max-width:480px){
+  .submenu{ left:0; transform:none; right:auto; }
+}
+
+@media (max-width:600px){
+  footer{ flex-direction:column; gap:8px; text-align:center; }
+}
 </style>
 </head>
 <body>
@@ -278,18 +303,18 @@ footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic
     <div class="right-block">
       <div class="lang-switch"><button class="active">ΕΛ</button><span style="opacity:.4">/</span><button>EN</button></div>
       <div class="social-row">
-        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="0.6" fill="currentColor" stroke="none"/></svg></a>
-        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 4v9.6a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 4c0 2.6 2 4.6 4.6 4.6"/></svg></a>
-        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15"><circle cx="8" cy="12" r="4" fill="currentColor"/><circle cx="16" cy="12" r="4" fill="currentColor" opacity="0.5"/></svg></a>
-        <a href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M13.6 8.2h-1.2c-.7 0-1.1.4-1.1 1.1v1.5H9.1v1.9h2.2V16h2v-3.3h1.5l.2-1.9h-1.7v-1.2c0-.35.15-.55.6-.55h1.1V8.2z" fill="currentColor" stroke="none"/></svg></a>
+        <a data-cms-href="instagram" href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="0.6" fill="currentColor" stroke="none"/></svg></a>
+        <a data-cms-href="tiktok" href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 4v9.6a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 4c0 2.6 2 4.6 4.6 4.6"/></svg></a>
+        <a data-cms-href="flickr" href="#"><svg viewBox="0 0 24 24" width="15" height="15"><circle cx="8" cy="12" r="4" fill="currentColor"/><circle cx="16" cy="12" r="4" fill="currentColor" opacity="0.5"/></svg></a>
+        <a data-cms-href="facebook" href="#"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M13.6 8.2h-1.2c-.7 0-1.1.4-1.1 1.1v1.5H9.1v1.9h2.2V16h2v-3.3h1.5l.2-1.9h-1.7v-1.2c0-.35.15-.55.6-.55h1.1V8.2z" fill="currentColor" stroke="none"/></svg></a>
       </div>
     </div>
   </header>
 
   <div class="hero-row">
     <div class="hero-text txt-shadow">
-      <div class="eyebrow">ζωντανό αρχείο ζωής</div>
-      <h1>Ιστορίες για Αγρίους</h1>
+      <div class="eyebrow" data-cms="storiesEyebrow">ζωντανό αρχείο ζωής</div>
+      <h1 data-cms="storiesTitle">Ιστορίες για Αγρίους</h1>
       <p>Εδώ ζουν οι ιστορίες μου — στιγμές, μέρη, ανθρώπους που άφησαν κάτι πάνω μου. Κάθε <span class="accent">αστέρι</span> πάνω στο δέντρο είναι μία από αυτές.</p>
       <p>Πλησίασε το ποντίκι σε ένα αστέρι για να δεις μια πρόγευση, και κάνε κλικ για να τη διαβάσεις ολόκληρη.</p>
     </div>
@@ -345,7 +370,7 @@ footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic
         <svg class="frame-corner tr" viewBox="0 0 40 40"><path d="M1,22 C1,9 9,1 22,1"/><path class="leaf" d="M6,6 C9,10 8,15 3,14 C6,12 7,9 6,6 Z"/><circle class="dot" cx="9" cy="3" r="1"/></svg>
         <svg class="frame-corner bl" viewBox="0 0 40 40"><path d="M1,22 C1,9 9,1 22,1"/><path class="leaf" d="M6,6 C9,10 8,15 3,14 C6,12 7,9 6,6 Z"/><circle class="dot" cx="9" cy="3" r="1"/></svg>
         <svg class="frame-corner br" viewBox="0 0 40 40"><path d="M1,22 C1,9 9,1 22,1"/><path class="leaf" d="M6,6 C9,10 8,15 3,14 C6,12 7,9 6,6 Z"/><circle class="dot" cx="9" cy="3" r="1"/></svg>
-        <div class="list-title-row"><span class="list-title">Ιστορίες</span></div>
+        <div class="list-title-row"><span class="list-title" data-cms="storiesListTitle">Ιστορίες</span></div>
         <div class="story-scroll">
           <div class="story-item" data-id="s1" data-title="[Τίτλος ιστορίας 1]" data-full="[Placeholder πλήρες κείμενο για την ιστορία 1. Εδώ θα γράφεις ολόκληρη την ιστορία μέσα από το CMS — όσο μεγάλη θες, με πιθανές εικόνες.]"><span class="glyph">✦</span><span class="story-title">[Τίτλος ιστορίας 1]</span></div>
           <div class="story-item" data-id="s2" data-title="[Τίτλος ιστορίας 2]" data-full="[Placeholder πλήρες κείμενο για την ιστορία 2. Εδώ θα γράφεις ολόκληρη την ιστορία μέσα από το CMS — όσο μεγάλη θες, με πιθανές εικόνες.]"><span class="glyph">✦</span><span class="story-title">[Τίτλος ιστορίας 2]</span></div>
@@ -366,14 +391,15 @@ footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic
   </div>
 
   <footer class="txt-shadow">
-    <div class="footer-status">[εδώ γράφεις ό,τι θες — status, quote, ό,τι σου έρθει]</div>
-    <div>© <span id="footerYear">2026</span> — ένα κοσμικό ταξίδι σε εξέλιξη</div>
+    <div class="footer-status" data-cms="footerStatus">[εδώ γράφεις ό,τι θες — status, quote, ό,τι σου έρθει]</div>
+    <div>© <span id="footerYear">2026</span> — <span data-cms="footerTagline">ένα κοσμικό ταξίδι σε εξέλιξη</span></div>
   </footer>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="gildor-enhancements.js"></script>
 <script id="pageLogic">
+if(window.gildorCMS) gildorCMS.bind();
 (function(){
   const preview = document.getElementById('storyPreview');
   const wrap = document.querySelector('.tree-wrap');
@@ -450,6 +476,137 @@ document.addEventListener('click', ()=>{
   document.querySelectorAll('.nav-item.open').forEach(i=> i.classList.remove('open'));
 });
 
+
+/* ---------- stories from the CMS ----------
+   Every published story becomes a star on the tree (placed automatically on a
+   bright branch point, in a fixed order so existing stars never move) and an
+   entry in the list. With no published stories the placeholder ones stay. */
+(function(){
+  const cms = window.gildorCMS;
+  const wrap = document.querySelector('.tree-wrap');
+  const list = document.querySelector('.story-scroll');
+  const preview = document.getElementById('storyPreview');
+  const overlay = document.getElementById('storyOverlay');
+  const hero = document.querySelector('.hero-text');
+  if(!cms || !cms.enabled || !wrap || !list || !preview || !overlay) return;
+
+  // evenly spread points on the tree's bright branches (x%, y%), best-spread first
+  const SPOTS = [[55.5,17.5],[46.9,69.9],[89.3,45.8],[12.1,38.2],[50.4,43.5],[21.5,58.3],[80.9,27.2],[73.5,63.0],[34.9,28.9],[41.8,55.9],[69.3,48.7],[62.7,33.0],[30.4,42.1],[56.8,60.6],[11.9,48.9],[50.1,27.9],[80.5,38.1],[56.0,51.6],[41.6,36.5],[23.9,33.9],[25.1,50.0],[62.3,24.4],[32.1,62.4],[44.4,20.8],[64.4,41.5],[79.8,52.1],[59.4,68.0],[52.9,36.3],[44.6,62.9],[73.4,32.3],[91.1,38.0],[39.2,46.0],[11.4,57.2],[31.5,55.4],[77.7,44.4],[26.2,26.3],[47.0,50.3],[32.6,35.7],[22.1,39.7],[50.8,56.3],[65.0,62.3],[43.0,31.0],[63.6,18.8],[59.9,46.7],[19.7,45.8],[74.5,68.3],[51.6,65.6],[18.7,53.1],[52.9,23.0],[40.9,25.4],[71.8,27.3],[43.2,41.6],[63.4,52.1],[67.1,66.9],[85.2,41.5],[82.9,47.6],[70.1,44.0],[36.6,39.6],[36.4,58.6],[52.9,47.7],[57.0,27.1],[39.7,51.7],[52.9,31.9],[59.8,56.7],[29.5,31.4],[55.0,40.4],[50.4,61.0],[75.7,48.7],[68.3,35.0],[34.6,24.8],[26.5,60.8],[47.5,34.6],[28.2,38.3],[67.0,29.6],[8.9,53.7],[45.0,46.3],[52.7,69.4],[36.4,32.8],[40.2,65.3],[32.1,45.7],[19.2,36.1],[30.7,49.5],[73.6,52.2],[76.4,40.9],[57.8,34.7],[44.9,59.2],[59.0,20.8],[65.1,45.4],[26.8,57.1],[19.1,49.6],[46.3,54.1],[45.4,66.3],[23.4,43.3],[21.3,61.8],[55.5,44.0],[62.4,65.2],[86.0,37.7],[36.8,43.0],[14.6,45.9],[24.8,30.1],[28.1,52.9],[50.0,39.9],[45.3,26.9],[76.2,28.7],[55.2,55.0],[47.9,30.8],[46.3,37.8],[15.8,56.1],[39.7,28.4],[50.7,53.0],[71.5,66.0],[23.5,53.1],[60.1,50.1],[40.6,60.1],[36.2,55.7],[57.2,24.2],[28.5,34.3],[42.8,49.4],[54.6,20.3],[80.9,42.0],[56.8,37.7],[64.8,49.3],[29.1,28.4],[59.3,53.8],[55.4,67.0],[37.3,36.4],[40.5,33.7],[30.2,58.9],[85.4,44.7],[72.2,46.6],[53.1,58.6],[32.4,38.8],[16.4,38.2],[68.1,64.1],[48.7,63.6],[32.4,52.7],[68.9,32.0],[68.8,41.4],[58.5,41.8],[59.8,17.7],[45.8,43.7],[53.9,62.5],[79.6,49.3],[13.3,54.0],[26.0,41.3],[53.8,29.0],[40.5,39.7],[75.3,26.2],[83.0,50.7],[72.6,29.8],[56.7,48.1],[81.3,45.2],[31.5,26.4],[53.4,26.4],[61.9,43.4],[49.3,68.0],[21.9,47.9],[23.8,36.4],[12.3,35.7],[48.6,58.6],[62.9,26.9],[74.4,43.3],[44.1,33.5],[86.6,47.7],[20.2,33.7],[49.9,46.3],[56.4,69.4],[39.3,31.3],[36.7,26.8],[46.3,40.3],[52.6,50.8],[88.0,39.7],[40.3,43.2],[77.9,46.8],[33.0,31.3],[33.7,41.0],[51.7,34.1],[68.8,46.2],[67.4,50.8],[58.4,65.8],[56.5,57.4],[71.7,34.8],[26.4,47.9],[18.8,40.3],[35.4,46.3],[61.1,40.4],[16.4,48.2],[45.4,29.3],[82.4,39.9],[42.0,58.1],[50.3,37.7],[65.9,32.9],[38.6,57.0],[53.3,42.4],[47.5,47.7],[25.2,39.2],[40.6,53.9],[47.3,61.7],[58.9,44.7],[26.5,43.7],[67.1,43.5],[33.8,43.5],[67.8,61.3],[53.0,45.2],[59.7,22.8],[38.8,41.4],[47.8,56.6],[53.9,53.0],[34.6,37.3],[75.3,30.7],[33.4,58.3],[45.4,52.2],[44.6,36.2],[65.4,65.2],[24.3,59.1],[55.7,46.0],[28.6,40.3],[62.4,63.2],[44.6,68.3],[44.0,39.0],[20.0,38.3],[47.9,42.3],[16.3,50.3],[37.5,24.4],[42.2,27.1],[53.5,60.5],[50.1,35.7],[43.5,54.3],[32.0,29.0],[28.2,54.8],[59.1,51.9],[60.8,34.4],[71.0,64.1],[27.0,32.6],[59.5,26.2],[30.9,33.0],[33.9,33.7],[27.5,51.0],[27.0,36.6],[87.2,42.9]];
+  const STAR = 'M50,4 L58,32 L86,24 L64,42 L92,50 L64,58 L86,76 L58,68 L50,96 L42,68 L14,76 L36,58 L8,50 L36,42 L14,24 L42,32 Z';
+  const coarse = window.matchMedia('(pointer: coarse)').matches;
+
+  /* --- intro paragraphs (Ρυθμίσεις Σελίδας → Ιστορίες για Αγρίους) --- */
+  function applyIntro(s){
+    if(!s || !hero || !hero.isConnected) return;
+    const t = cms.pick(s.storiesIntro);
+    if(!t || !t.trim()) return;
+    hero.querySelectorAll(':scope > p').forEach(p=> p.remove());
+    t.split(/\n\s*\n/).map(x=> x.trim()).filter(Boolean).forEach(par=>{
+      const p = document.createElement('p'); cms.inline(p, par, 'span', 'accent'); hero.appendChild(p);
+    });
+  }
+  const cached = cms.cachedSettings();
+  const introP = hero ? [...hero.querySelectorAll(':scope > p')] : [];
+  if(cached) applyIntro(cached);
+  else introP.forEach(p=>{ p.style.opacity = '0'; });
+  cms.settings().then(applyIntro).finally(()=>{
+    if(hero) hero.querySelectorAll(':scope > p').forEach(p=>{ p.style.transition = 'opacity .3s ease'; p.style.opacity = '1'; });
+  });
+
+  /* --- stories --- */
+  const oldStars = [...wrap.querySelectorAll('.tree-star')];
+  const hiding = [...oldStars, list];
+  hiding.forEach(el=>{ el.style.transition = 'opacity .3s ease'; el.style.opacity = '0'; });
+
+  const QUERY = '*[_type=="story"] | order(_createdAt asc){_id, _createdAt, title, teaser, date, ' +
+    '"image": coverImage.asset->url, ' +
+    '"body": body{"el": el[]{..., _type=="image" => {"url": asset->url}}, "en": en[]{..., _type=="image" => {"url": asset->url}}}}';
+
+  function hidePreview(){ preview.classList.remove('visible'); }
+  function showPreview(star, st){
+    preview.querySelector('.preview-title').textContent = cms.pick(st.title);
+    preview.querySelector('.preview-teaser').textContent = cms.pick(st.teaser);
+    const wr = wrap.getBoundingClientRect(), sr = star.getBoundingClientRect();
+    let left = (sr.left - wr.left) + sr.width/2 + 14;
+    const top = (sr.top - wr.top) - 10;
+    if(left + 190 > wr.width) left = (sr.left - wr.left) - 190 - 14;
+    if(left < 0) left = 6;
+    preview.style.left = left + 'px'; preview.style.top = top + 'px';
+    preview.classList.add('visible');
+  }
+
+  function openStory(st){
+    overlay.querySelector('.overlay-title').textContent = cms.pick(st.title);
+    const body = overlay.querySelector('.overlay-body');
+    body.textContent = '';
+    if(st.date){
+      const d = document.createElement('div'); d.className = 'overlay-date'; d.textContent = cms.longDate(st.date); body.appendChild(d);
+    }
+    if(st.image){
+      const img = document.createElement('img'); img.className = 'cms-img'; img.alt = ''; img.src = cms.imageUrl(st.image, 900); body.appendChild(img);
+    }
+    const text = document.createElement('div'); text.className = 'overlay-text';
+    const blocks = st.body && ((st.body[cms.lang()] && st.body[cms.lang()].length) ? st.body[cms.lang()] : st.body.el);
+    if(blocks && blocks.length) cms.renderBlocks(blocks, text);
+    else{ const t = cms.pick(st.teaser); if(t){ const p = document.createElement('p'); p.textContent = t; text.appendChild(p); } }
+    body.appendChild(text);
+    const card = overlay.querySelector('.story-overlay-card'); if(card) card.scrollTop = 0;
+    overlay.classList.add('open');
+  }
+
+  cms.query(QUERY)
+    .then(data=>{
+      if(!wrap.isConnected || !Array.isArray(data)) return;
+      const stories = data.filter(st=> cms.pick(st.title));
+      if(!stories.length) return;
+
+      const n = stories.length;
+      const size = Math.max(13, Math.min(22, 22 - Math.max(0, n - 10) * 0.09));   // more stories -> slightly smaller stars
+      oldStars.forEach(s=> s.remove());
+      wrap.querySelectorAll('.tree-star').forEach(s=> s.remove());
+
+      let armed = null;                                  // touch: first tap previews, second tap opens
+      const starById = {};
+      stories.forEach((st, i)=>{
+        const spot = SPOTS[i];
+        if(!spot) return;                                // beyond the available spots: list only
+        const a = document.createElement('a');
+        a.className = 'tree-star'; a.href = '#';
+        a.style.top = spot[1] + '%'; a.style.left = spot[0] + '%';
+        a.style.width = size + 'px'; a.style.height = size + 'px';
+        a.innerHTML = '<svg viewBox="0 0 100 100"><path d="' + STAR + '"/></svg>';
+        a.querySelector('path').style.animationDelay = ((i % 8) * 0.3) + 's';
+        a.addEventListener('mouseenter', ()=>{ if(!coarse) showPreview(a, st); });
+        a.addEventListener('mouseleave', ()=>{ if(!coarse) hidePreview(); });
+        a.addEventListener('click', e=>{
+          e.preventDefault(); e.stopPropagation();
+          if(coarse && armed !== a){ armed = a; showPreview(a, st); return; }
+          armed = null; hidePreview(); openStory(st);
+        });
+        starById[st._id] = a;
+        wrap.insertBefore(a, preview);
+      });
+      wrap.addEventListener('click', ()=>{ armed = null; hidePreview(); });
+
+      // list: newest first
+      const sorted = stories.slice().sort((x, y)=> String(y.date || y._createdAt).localeCompare(String(x.date || x._createdAt)));
+      list.textContent = '';
+      sorted.forEach(st=>{
+        const it = document.createElement('div'); it.className = 'story-item';
+        const g = document.createElement('span'); g.className = 'glyph'; g.textContent = '✦';
+        const t = document.createElement('span'); t.className = 'story-title'; t.textContent = cms.pick(st.title);
+        it.append(g, t);
+        it.addEventListener('click', ()=> openStory(st));
+        it.addEventListener('mouseenter', ()=>{ const s = starById[st._id]; if(s) s.classList.add('hl'); });
+        it.addEventListener('mouseleave', ()=>{ const s = starById[st._id]; if(s) s.classList.remove('hl'); });
+        list.appendChild(it);
+      });
+    })
+    .catch(err=> console.warn('Gildor CMS: keeping the placeholder stories.', err))
+    .finally(()=>{
+      [...wrap.querySelectorAll('.tree-star'), list].forEach(el=>{ if(el.isConnected) el.style.opacity = '1'; });
+    });
+})();
 </script>
 
 <script id="shaderInit">
