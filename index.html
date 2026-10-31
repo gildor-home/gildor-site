@@ -87,6 +87,7 @@ header{ display:flex; justify-content:space-between; align-items:flex-start; fle
 .about p em{ font-style:normal; font-weight:500; color:#e0c37a; }
 
 .feed{ flex:1; min-width:0; text-align:right; overflow:hidden; }
+.feed[hidden]{ display:none; }
 .feed .section-label{ text-align:right; }
 .ticker-mask{
   overflow:hidden; width:100%;
@@ -295,7 +296,7 @@ footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic
       <h1 data-cms="homeHeading" data-cms-inline>Γράφω για να θυμάμαι <em>τα μέρη</em> που άλλαξαν κάτι μέσα μου.</h1>
       <p data-cms="homeSubtext" data-cms-inline>Ταξίδια, μουσική, ουρανός, σκέψεις — τέσσερις δρόμοι που ξεκινούν από το ίδιο σημείο.</p>
     </div>
-    <div class="feed">
+    <div class="feed" hidden>
       <div class="eyebrow">τελευταία καταχώρηση</div>
       <div class="ticker-mask">
         <div class="ticker-track" id="tickerTrack">
@@ -433,21 +434,13 @@ document.querySelectorAll('.lang-switch button').forEach(btn=>{
 });
 
 /* ---------- populate ticker feed (duplicated once for seamless loop) ---------- */
-let feedEntries = [
-  { date:'12 ΑΥΓ', p:'nomad', tag:'World Nomad', title:'Τρεις μέρες στα ριζά της Πίνδου', url:'https://worldnomad.gildor.com' },
-  { date:'09 ΑΥΓ', p:'cosmos', tag:'Out of this World', title:'Η βροχή των Περσειδών φέτος', url:'https://cosmos.gildor.com' },
-  { date:'03 ΑΥΓ', p:'music', tag:'Music of our Memories', title:'Το τραγούδι που έγραψε ένα λιμάνι', url:'https://music.gildor.com' },
-  { date:'28 ΙΟΥΛ', p:'reinvented', tag:'Απάτητες Διαδρομές', title:'Κεφάλαιο 3 — Η σιωπή ανάμεσα στους σταθμούς', url:'https://reinvented.gildor.com' },
-  { date:'21 ΙΟΥΛ', p:'nomad', tag:'World Nomad', title:'Ένα βράδυ στη Χαλκιδική', url:'https://worldnomad.gildor.com' },
-];
+let feedEntries = [];   // filled from the CMS (published Εγγραφές Αρχείου); nothing is shown until there are some
 const track = document.getElementById('tickerTrack');
 function esc(t){ return String(t == null ? '' : t).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 function safeUrl(u){ return /^(https?:\/\/|#)/i.test(u || '') ? u : '#'; }
-function renderFeed(){
+function feedHtml(list){
   let html = '';
-  [...feedEntries, ...feedEntries].forEach((e,i)=>{
-    // placeholder href for now — once the CMS is connected each post gets
-    // its own real URL, this will link straight to the actual article
+  list.forEach(e=>{
     html += `<a href="${esc(safeUrl(e.url))}" class="feed-item" data-p="${esc(e.p)}">
       <span class="feed-date">${esc(e.date)}</span>
       <span class="feed-tag">${esc(e.tag)}</span>
@@ -455,7 +448,26 @@ function renderFeed(){
     </a>`;
     html += `<span class="feed-sep">◆</span>`;
   });
-  track.innerHTML = html;
+  return html;
+}
+function renderFeed(){
+  track.style.animation = '';
+  if(!feedEntries.length){ track.innerHTML = ''; return; }
+  if(feedEntries.length === 1){            // a single entry just sits there, no scrolling
+    track.innerHTML = feedHtml(feedEntries).replace(/<span class="feed-sep">◆<\/span>$/, '');
+    track.style.animation = 'none';
+    return;
+  }
+  // repeat the entries until one block is as wide as the strip, then double it for a seamless loop
+  const mask = track.parentElement;
+  let base = feedEntries.slice();
+  track.innerHTML = feedHtml(base);
+  let guard = 0;
+  while(track.scrollWidth < mask.clientWidth && guard++ < 8){
+    base = base.concat(feedEntries);
+    track.innerHTML = feedHtml(base);
+  }
+  track.innerHTML = feedHtml(base) + feedHtml(base);
 }
 renderFeed();
 
@@ -581,7 +593,11 @@ document.querySelectorAll('.p-title').forEach(splitTitle);
           date: cms.shortDate(p.date), p: p.site, tag: cms.siteName(s, p.site),
           title: cms.pick(p.title), url: p.externalUrl || urlFor(p.site)
         })).filter(e=> e.title);
-        if(list.length && track.isConnected){ feedEntries = list; renderFeed(); }
+        if(list.length && track.isConnected){
+          feedEntries = list;
+          const box = track.closest('.feed'); if(box) box.hidden = false;
+          renderFeed();
+        }
       });
     })
     .catch(err=> console.warn('Gildor CMS: keeping the built-in ticker.', err));

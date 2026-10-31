@@ -261,27 +261,11 @@ document.addEventListener('click', ()=>{
   document.querySelectorAll('.nav-item.open').forEach(i=> i.classList.remove('open'));
 });
 
-/* ================= DEMO DATA (θα αντικατασταθεί από το CMS) ================= */
+/* ================= data (comes from the CMS) ================= */
 const monthNames = ['Ιαν','Φεβ','Μαρ','Απρ','Μάι','Ιούν','Ιούλ','Αύγ','Σεπ','Οκτ','Νοέ','Δεκ'];
 let siteNames = { nomad:'World Nomad', music:'Music of our Memories', cosmos:'Out of this World', reinvented:'Απάτητες Διαδρομές' };
 
-let entries = [
-  { date:'2004-07-14', site:'nomad', title:'Πρώτη φορά στη Σαντορίνη', excerpt:'Σημειώσεις από ένα καλοκαίρι που άλλαξε πώς βλέπω τα ταξίδια.' },
-  { date:'2006-11-02', site:'cosmos', title:'Η πρώτη έκλειψη που παρακολούθησα', excerpt:'Μια νύχτα στην ταράτσα, με ένα τηλεσκόπιο δανεικό.' },
-  { date:'2009-08-12', site:'cosmos', title:'Η βροχή των Περσειδών από το χωριό', excerpt:'Ο ουρανός χωρίς φώτα πόλης είναι κάτι εντελώς διαφορετικό.' },
-  { date:'2011-03-21', site:'music', title:'Το τραγούδι που άκουσα σε ένα τρένο στη Γερμανία', excerpt:'Δεν ήξερα τη γλώσσα, αλλά κατάλαβα τη μελωδία.' },
-  { date:'2014-06-05', site:'nomad', title:'Δρόμοι στην Καππαδοκία', excerpt:'Πέτρινα σπίτια σκαλισμένα στον χρόνο.' },
-  { date:'2016-09-18', site:'reinvented', title:'Οι πρώτες σημειώσεις για το βιβλίο', excerpt:'Μια ιδέα που γεννήθηκε σε ένα τετράδιο, όχι σε υπολογιστή.' },
-  { date:'2018-01-09', site:'music', title:'Ένα τραγούδι, ένα λιμάνι, μια αποχώρηση', excerpt:'Η ιστορία πίσω από ένα κομμάτι που δεν με άφησε ποτέ.' },
-  { date:'2020-05-30', site:'cosmos', title:'Παρατηρώντας τον Δία από το μπαλκόνι', excerpt:'Την περίοδο της καραντίνας, ο ουρανός ήταν το μόνο ταξίδι.' },
-  { date:'2021-10-11', site:'nomad', title:'Νύχτα στη Χαλκιδική', excerpt:'Ένα βράδυ που δεν σχεδίασα, αλλά θυμάμαι καθαρά.' },
-  { date:'2022-04-02', site:'reinvented', title:'Κεφάλαιο 1 — Το πρώτο βήμα', excerpt:'Πώς ξεκινάει κανείς να επαναπροσδιορίζεται;' },
-  { date:'2023-08-09', site:'cosmos', title:'Η βροχή των Περσειδών φέτος', excerpt:'Ο ουρανός της Αττικής τα μεσάνυχτα του Αυγούστου.' },
-  { date:'2024-07-21', site:'nomad', title:'Τρεις μέρες στα ριζά της Πίνδου', excerpt:'Ένα μονοπάτι που δεν είχα σκοπό να περπατήσω.' },
-  { date:'2025-12-03', site:'music', title:'Το τραγούδι που έγραψε ένα λιμάνι', excerpt:'Μια ιστορία από ένα ταξίδι που δεν με άφησε ποτέ.' },
-  { date:'2026-07-28', site:'reinvented', title:'Κεφάλαιο 3 — Η σιωπή ανάμεσα στους σταθμούς', excerpt:'Ένα απόσπασμα από το βιβλίο, τώρα διαθέσιμο και σε φωνή.' },
-  { date:'2026-08-12', site:'nomad', title:'Τρεις μέρες στα ριζά της Πίνδου', excerpt:'Σημειώσεις και βίντεο από ένα μονοπάτι που με βρήκε.' },
-];
+let entries = [];   // filled from the CMS (published Εγγραφές Αρχείου)
 
 /* ================= state ================= */
 let state = { keyword:'', site:'all', year:'all', month:'all' };
@@ -289,6 +273,7 @@ let state = { keyword:'', site:'all', year:'all', month:'all' };
 /* build year timeline from actual data range */
 const timelineTrack = document.getElementById('timelineTrack');
 function buildTimeline(){
+  if(!entries.length){ timelineTrack.innerHTML = '<div class="year-item active" data-year="all">Όλα</div>'; return; }
   const years = entries.map(e=> parseInt(e.date.slice(0,4)));
   const minYear = Math.min(...years), maxYear = Math.max(...years);
   const yearsWithData = new Set(years);
@@ -318,6 +303,11 @@ const resultsList = document.getElementById('resultsList');
 const resultsMeta = document.getElementById('resultsMeta');
 
 function render(){
+  if(!entries.length){
+    resultsMeta.textContent = '';
+    resultsList.innerHTML = '<div class="no-results">Οι πρώτες καταχωρήσεις έρχονται σύντομα.</div>';
+    return;
+  }
   let filtered = entries.filter(e=>{
     if(state.keyword && !(e.title.toLowerCase().includes(state.keyword) || e.excerpt.toLowerCase().includes(state.keyword))) return false;
     if(state.site !== 'all' && e.site !== state.site) return false;
