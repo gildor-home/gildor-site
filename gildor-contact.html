@@ -145,19 +145,19 @@ footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic
     <a href="index.html" class="logo">GILDOR CARANTHIR NARMOLANYA</a>
     <div class="nav-tabs">
       <div class="nav-item">
-          <a href="#">Σχετικά</a>
+          <a href="#" data-cms="navAbout">Σχετικά</a>
           <div class="submenu">
             <div class="submenu-inner">
-              <a href="gildor-whoiswho.html">Who is who</a>
-              <a href="gildor-journey.html">Ιστορίες για Αγρίους</a>
-              <a href="gildor-universes.html">Τα 4 σύμπαντα</a>
-              <a href="gildor-faq.html">FAQ</a>
+              <a href="gildor-whoiswho.html" data-cms="navWho">Who is who</a>
+              <a href="gildor-journey.html" data-cms="navStories">Ιστορίες για Αγρίους</a>
+              <a href="gildor-universes.html" data-cms="navUniverses">Τα 4 σύμπαντα</a>
+              <a href="gildor-faq.html" data-cms="navFaq">FAQ</a>
             </div>
           </div>
         </div>
-      <a href="gildor-archive.html">Αρχείο</a>
-      <a href="gildor-newsletter.html">Newsletter</a>
-      <a href="#" class="current">Επικοινωνία</a>
+      <a href="gildor-archive.html" data-cms="navArchive">Αρχείο</a>
+      <a href="gildor-newsletter.html" data-cms="navNewsletter">Newsletter</a>
+      <a href="#" class="current" data-cms="navContact">Επικοινωνία</a>
     </div>
     <div class="right-block">
       <div class="lang-switch"><button class="active">ΕΛ</button><span style="opacity:.4">/</span><button>EN</button></div>
@@ -180,30 +180,30 @@ footer .footer-status{ font-family:'Cormorant Garamond',serif; font-style:italic
 
         <form class="contact-form" id="contactForm">
           <div class="field">
-            <label>Όνομα</label>
-            <input type="text" placeholder="πώς σε λένε" required>
+            <label data-cms="uiName">Όνομα</label>
+            <input type="text" placeholder="πώς σε λένε" data-cms-attr="placeholder:uiNamePlaceholder" required>
           </div>
           <div class="field">
             <label>Email</label>
-            <input type="email" placeholder="το email σου" required>
+            <input type="email" placeholder="το email σου" data-cms-attr="placeholder:uiEmailPlaceholder" required>
           </div>
           <div class="field">
-            <label>Μήνυμα</label>
-            <textarea placeholder="γράψε ό,τι θες εδώ..." required></textarea>
+            <label data-cms="uiMessage">Μήνυμα</label>
+            <textarea placeholder="γράψε ό,τι θες εδώ..." data-cms-attr="placeholder:uiMessagePlaceholder" required></textarea>
           </div>
-          <button type="submit" class="submit-btn">Αποστολή <span class="arrow">→</span></button>
-          <div class="success-msg" id="successMsg">Στάλθηκε — ευχαριστώ, θα σου απαντήσω σύντομα.</div>
+          <button type="submit" class="submit-btn"><span data-cms="uiSend">Αποστολή</span> <span class="arrow">→</span></button>
+          <div class="success-msg" id="successMsg" data-cms="uiSentMessage">Στάλθηκε — ευχαριστώ, θα σου απαντήσω σύντομα.</div>
         </form>
       </div>
 
       <div class="alt-col txt-shadow">
         <div class="alt-block">
-          <div class="alt-label">ή απευθείας</div>
+          <div class="alt-label" data-cms="uiOrDirectly">ή απευθείας</div>
           <div class="alt-value" data-cms="contactEmail">hello@gildor.com</div>
         </div>
 
         <div class="alt-block">
-          <div class="alt-label">ή βρες με εδώ</div>
+          <div class="alt-label" data-cms="uiOrFindMe">ή βρες με εδώ</div>
           <div class="social-links">
             <a data-cms-href="instagram" href="#" class="social-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="0.6" fill="currentColor" stroke="none"/></svg> Instagram</a>
             <a data-cms-href="tiktok" href="#" class="social-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 4v9.6a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 4c0 2.6 2 4.6 4.6 4.6"/></svg> TikTok</a>

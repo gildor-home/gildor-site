@@ -173,6 +173,8 @@
     }
   }
 
+  window.gildorSwapPage = swapPage;
+
   document.addEventListener('click', (e)=>{
     const link = e.target.closest('a');
     if(!link) return;
@@ -336,15 +338,19 @@
 
 
 /* ============================================================
-   GILDOR — CMS connection (Sanity)
-   Reads published content from the Sanity project. If anything fails,
-   or nothing is published yet, every page simply keeps its built-in text.
+   GILDOR — CMS connection (Sanity) + language (ΕΛ / EN)
+   Every text that can change comes from the Sanity project, in Greek and
+   in English. Nothing is translated by this script: when a field is empty
+   (or has no English yet) the page simply keeps / falls back to the Greek.
 
    Pages mark what the CMS may replace with attributes:
-     data-cms="field"            text from Site Settings  (e.g. footerStatus)
-     data-cms="portal:nomad.name" a field of one of the 4 universes
-     data-cms-inline             allow *highlighted* words (becomes <em>)
-     data-cms-href="instagram"   link from Site Settings
+     data-cms="field"                    text from Site Settings
+     data-cms="portal:nomad.name"        a field of one of the 4 universes
+     data-cms-inline                     allow *highlighted* words (becomes <em>)
+     data-cms-href="instagram"           link from Site Settings
+     data-cms-attr="placeholder:uiName"  an attribute (e.g. placeholder) from Site Settings
+
+   Language: the choice is kept in localStorage ('gildorLang').
    ============================================================ */
 (function(){
   const PROJECT_ID = 't6wpnbue';   // <-- the 8-character project id from Sanity
@@ -355,21 +361,26 @@
 
   const enabled = /^[a-z0-9]{6,12}$/.test(PROJECT_ID);
 
+  // built-in universe names (used only while Site Settings has none)
   const SITE_NAMES = {
     nomad: 'World Nomad', music: 'Music of our Memories',
     cosmos: 'Out of this World', reinvented: 'Απάτητες Διαδρομές'
   };
-  const MONTHS_SHORT = ['ΙΑΝ','ΦΕΒ','ΜΑΡ','ΑΠΡ','ΜΑΪ','ΙΟΥΝ','ΙΟΥΛ','ΑΥΓ','ΣΕΠ','ΟΚΤ','ΝΟΕ','ΔΕΚ'];
+  // calendar words for the short dates (not content: just the months)
+  const MONTHS_SHORT = {
+    el: ['ΙΑΝ','ΦΕΒ','ΜΑΡ','ΑΠΡ','ΜΑΪ','ΙΟΥΝ','ΙΟΥΛ','ΑΥΓ','ΣΕΠ','ΟΚΤ','ΝΟΕ','ΔΕΚ'],
+    en: ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
+  };
 
   function lang(){
-    try{ return localStorage.getItem('gildorLang') || 'el'; }catch(err){ return 'el'; }
+    try{ return localStorage.getItem('gildorLang') === 'en' ? 'en' : 'el'; }catch(err){ return 'el'; }
   }
 
-  // Picks the visitor's language from a {el, en} field, falling back to Greek.
+  // Picks the visitor's language from a {el, en} field; English falls back to the Greek.
   function pick(field){
     if(field == null) return '';
     if(typeof field === 'string') return field;
-    return field[lang()] || field.el || '';
+    return (lang() === 'en' ? (field.en || field.el) : field.el) || '';
   }
 
   async function query(groq){
@@ -391,6 +402,7 @@
   /* ---------- Site Settings (fetched once, remembered for the visit) ---------- */
   const SETTINGS_QUERY = '*[_type=="siteSettings"] | order(_updatedAt desc)[0]';
   let settingsPromise = null;
+  let latest = null;
 
   function cachedSettings(){
     try{ return JSON.parse(sessionStorage.getItem('gildorSettings') || 'null'); }catch(err){ return null; }
@@ -399,11 +411,17 @@
     if(!enabled) return Promise.resolve(null);
     if(!settingsPromise){
       settingsPromise = query(SETTINGS_QUERY).then(r=>{
-        if(r){ try{ sessionStorage.setItem('gildorSettings', JSON.stringify(r)); }catch(err){} }
+        if(r){ latest = r; try{ sessionStorage.setItem('gildorSettings', JSON.stringify(r)); }catch(err){} }
         return r || null;
       }).catch(()=> null);
     }
     return settingsPromise;
+  }
+
+  // a small interface word written in the Studio (Λέξεις περιβάλλοντος), else the built-in Greek
+  function ui(key, fallback){
+    const s = latest || cachedSettings();
+    return (s && pick(s[key])) || fallback;
   }
 
   function portalOf(s, key){
@@ -426,25 +444,34 @@
     el.textContent = '';
     String(text).split(/\*([^*]+)\*/).forEach((part, i)=>{
       if(i % 2){
-        const t = document.createElement(tag || 'em');
-        if(cls) t.className = cls;
-        t.textContent = part;
-        el.appendChild(t);
+        const x = document.createElement(tag || 'em');
+        if(cls) x.className = cls;
+        x.textContent = part;
+        el.appendChild(x);
       }else if(part){
         el.appendChild(document.createTextNode(part));
       }
     });
   }
 
+  function setNode(n, text){
+    if(n.hasAttribute('data-cms-inline')) inline(n, text);
+    else{ n.textContent = text; if(text.indexOf('\n') >= 0) n.style.whiteSpace = 'pre-line'; }
+  }
+
   function applyTo(nodes, s){
+    if(!s) return;
     nodes.forEach(n=>{
       const key = n.getAttribute('data-cms');
       if(key){
         const text = pick(valueFor(s, key));
-        if(text){
-          if(n.hasAttribute('data-cms-inline')) inline(n, text);
-          else{ n.textContent = text; if(text.indexOf('\n') >= 0) n.style.whiteSpace = 'pre-line'; }
-        }
+        if(text) setNode(n, text);
+      }
+      const attrSpec = n.getAttribute('data-cms-attr');
+      if(attrSpec){
+        const [attrName, fieldKey] = attrSpec.split(':');
+        const v = pick(valueFor(s, fieldKey));
+        if(attrName && v) n.setAttribute(attrName, v);
       }
       let hrefKey = n.getAttribute('data-cms-href');
       if(hrefKey){
@@ -459,27 +486,59 @@
     });
   }
 
-  // Fills every data-cms element on the current page. Remembers the last answer
+  /* ---------- language: which button is lit, <html lang> ---------- */
+  function applyLangUI(){
+    const l = lang();
+    document.querySelectorAll('.lang-switch button').forEach(b=>{
+      const code = (b.textContent || '').trim().toUpperCase() === 'EN' ? 'en' : 'el';
+      b.classList.toggle('active', code === l);
+      b.setAttribute('aria-pressed', String(code === l));
+      b.setAttribute('type', 'button');
+    });
+    document.documentElement.setAttribute('lang', l);
+  }
+
+  // Fills every marked element on the current page. Remembers the last answer
   // so later pages fill instantly, without a flash of the built-in text.
   function bind(){
+    applyLangUI();
     if(!enabled) return;
-    const nodes = [...document.querySelectorAll('[data-cms],[data-cms-href]')];
+    const nodes = [...document.querySelectorAll('[data-cms],[data-cms-href],[data-cms-attr]')];
     if(!nodes.length) return;
     const cached = cachedSettings();
+    if(cached) latest = cached;
     const toHide = cached ? [] : nodes.filter(n=> n.hasAttribute('data-cms'));
-    if(cached) applyTo(nodes, cached);
+    applyTo(nodes, cached);
     toHide.forEach(n=>{ n.style.transition = 'opacity .25s ease'; n.style.opacity = '0'; });
     const reveal = ()=> toHide.forEach(n=>{ if(n.isConnected) n.style.opacity = '1'; });
     const timer = setTimeout(reveal, HIDE_MS);
-    settings().then(s=>{ if(s) applyTo(nodes.filter(n=> n.isConnected), s); })
+    settings().then(s=>{ applyTo(nodes.filter(n=> n.isConnected), s); })
       .finally(()=>{ clearTimeout(timer); reveal(); });
+  }
+
+  // ΕΛ / EN buttons: remember the choice and rebuild the current page in place
+  // (the background and the sound keep running)
+  if(!window.__gildorLangHandler){
+    window.__gildorLangHandler = true;
+    document.addEventListener('click', e=>{
+      const btn = e.target.closest && e.target.closest('.lang-switch button');
+      if(!btn) return;
+      e.preventDefault();
+      const next = (btn.textContent || '').trim().toUpperCase() === 'EN' ? 'en' : 'el';
+      if(next === lang()) return;
+      try{ localStorage.setItem('gildorLang', next); }catch(err){}
+      applyLangUI();
+      const href = location.pathname.split('/').pop() || 'index.html';
+      if(window.gildorSwapPage) window.gildorSwapPage(href, false);
+      else location.reload();
+    });
   }
 
   /* ---------- small helpers pages can use ---------- */
   function shortDate(dateStr){
     const d = new Date(dateStr + 'T12:00:00');
     if(isNaN(d)) return '';
-    return String(d.getDate()).padStart(2, '0') + ' ' + MONTHS_SHORT[d.getMonth()];
+    return String(d.getDate()).padStart(2, '0') + ' ' + MONTHS_SHORT[lang()][d.getMonth()];
   }
   function longDate(dateStr){
     const d = new Date(dateStr + 'T12:00:00');
@@ -540,7 +599,7 @@
   }
 
   window.gildorCMS = {
-    enabled, query, pick, lang,
+    enabled, query, pick, lang, ui,
     settings, cachedSettings, bind, inline,
     portalOf, siteName, shortDate, longDate, imageUrl, renderBlocks, SITE_NAMES
   };
